@@ -290,6 +290,34 @@
    RESPONSIVE
    ================================================================ */
 
+/* Force layout en colonne pour les formulaires - chatter en bas */
+.o_form_view {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.o_form_renderer {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.o_form_sheet_bg {
+    order: 1 !important;
+    width: 100% !important;
+}
+
+.oe_chatter {
+    order: 2 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+/* Cache les chatters en doublon (au cas où héritage) */
+.oe_chatter:not(:first-of-type) {
+    display: none !important;
+}
+
 @media (max-width: 768px) {
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td,
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view thead th {
@@ -297,3 +325,4 @@
         font-size: 13px !important;
     }
 }
+

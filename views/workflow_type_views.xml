@@ -82,30 +82,5 @@
             </field>
         </record>
 
-        <!-- Menu Racine -->
-        <menuitem id="menu_workflow_root"
-                  name="Workflow"
-                  web_icon="workflow,static/description/icon.png"
-                  sequence="10"/>
-
-        <!-- Menu Principal : Demandes -->
-        <menuitem id="menu_workflow_requests"
-                  name="Demandes"
-                  parent="menu_workflow_root"
-                  sequence="10"/>
-
-        <!-- Menu Configuration -->
-        <menuitem id="menu_workflow_config"
-                  name="Configuration"
-                  parent="menu_workflow_root"
-                  sequence="100"/>
-
-        <!-- Sous-menu : Types de Workflow -->
-        <menuitem id="menu_workflow_type"
-                  name="Types de Workflow"
-                  parent="menu_workflow_config"
-                  action="action_workflow_type"
-                  sequence="10"/>
-
     </data>
 </odoo>

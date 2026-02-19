@@ -77,13 +77,6 @@
                         <page string="Pièces jointes" name="attachments_tab">
                             <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
                         </page>
-                        <page string="Historique" name="history_tab">
-                            <div class="oe_chatter">
-                                <field name="message_follower_ids"/>
-                                <field name="activity_ids"/>
-                                <field name="message_ids"/>
-                            </div>
-                        </page>
                     </notebook>
                 </sheet>
                 
