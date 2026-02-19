@@ -49,9 +49,24 @@
         'security/workflow_security.xml',
         'security/ir.model.access.csv',
         
+        # Data
+        'data/workflow_sequence.xml',
+        
         # Views
         'views/workflow_type_views.xml',
+        'views/workflow_request_views.xml',
+        'views/workflow_dashboard.xml',
+        'views/workflow_menus.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'workflow/static/src/css/workflow_theme.css',
+            'workflow/static/src/js/workflow_theme.js',
+        ],
+        'web.assets_frontend': [
+            'workflow/static/src/css/workflow_dashboard.css',
+        ],
+    },
     'application': True,
     'installable': True,
     'auto_install': False,

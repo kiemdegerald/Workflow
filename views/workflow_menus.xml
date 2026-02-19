@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         ACTION DASHBOARD - TABLEAU DE BORD
+         Action pour afficher le dashboard workflow
+         ================================================================ -->
+    
+    <record id="action_workflow_dashboard_url" model="ir.actions.act_url">
+        <field name="name">Tableau de bord</field>
+        <field name="url">/workflow/dashboard</field>
+        <field name="target">self</field>
+    </record>
+
+    <!-- ===================================================================
+         MENU ROOT - WORKFLOW
+         Menu principal du module workflow
+         ================================================================ -->
+    
+    <menuitem id="menu_workflow_root"
+              name="Workflow"
+              sequence="10"/>
+
+    <!-- Menu: Tableau de bord -->
+    <menuitem id="menu_workflow_dashboard"
+              name="Tableau de bord"
+              parent="menu_workflow_root"
+              action="action_workflow_dashboard_url"
+              sequence="1"/>
+
+    <!-- Menu: Demandes -->
+    <menuitem id="menu_workflow_requests"
+              name="Demandes"
+              parent="menu_workflow_root"
+              action="action_workflow_request"
+              sequence="10"/>
+
+    <!-- Menu: Configuration -->
+    <menuitem id="menu_workflow_config"
+              name="Configuration"
+              parent="menu_workflow_root"
+              sequence="100"/>
+
+    <menuitem id="menu_workflow_types"
+              name="Types de workflow"
+              parent="menu_workflow_config"
+              action="action_workflow_type"
+              sequence="10"/>
+
+</odoo>

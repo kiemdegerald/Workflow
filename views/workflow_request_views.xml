@@ -1,0 +1,295 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         VUE FORMULAIRE - DEMANDE DE WORKFLOW
+         Formulaire détaillé inspiré du mockup bancaire
+         ================================================================ -->
+    
+    <record id="view_workflow_request_form" model="ir.ui.view">
+        <field name="name">workflow.request.form</field>
+        <field name="model">workflow.request</field>
+        <field name="arch" type="xml">
+            <form string="Demande de Workflow">
+                <!-- En-tête avec statusbar -->
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,in_progress,approved"/>
+                </header>
+                
+                <sheet>
+                    <!-- Titre et badge de statut -->
+                    <div class="oe_title">
+                        <label for="name" class="oe_edit_only"/>
+                        <h1>
+                            <field name="name" readonly="1" placeholder="Référence auto-générée"/>
+                        </h1>
+                    </div>
+                    
+                    <!-- Informations client -->
+                    <group name="client_info" string="👤 Informations client">
+                        <group>
+                            <field name="client_number" placeholder="ex. CLT-2026-00784"/>
+                            <field name="account_number" placeholder="ex. 001-78459632-01"/>
+                        </group>
+                        <group>
+                            <field name="client_name" placeholder="Nom complet"/>
+                            <field name="credit_type"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Détails financiers -->
+                    <group name="financial_details" string="💰 Détails financiers">
+                        <group>
+                            <field name="subject" placeholder="ex. Prêt personnel logement" required="1"/>
+                            <field name="amount" placeholder="0" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="duration_months" placeholder="ex. 60"/>
+                            <field name="priority" widget="priority"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Description / Justification - Champ large sur toute la largeur -->
+                    <group name="description_group" string="📝 Description / Justification" col="1">
+                        <field name="description" placeholder="Décrivez le contexte et la justification de cette demande de crédit..." nolabel="1" widget="text" options="{'rows': 6}" class="oe_inline"/>
+                    </group>
+                    
+                    <!-- Configuration workflow - Masquée par défaut -->
+                    <group name="workflow_config" string="⚙️ Configuration workflow" invisible="1">
+                        <group>
+                            <field name="workflow_type_id" options="{'no_create': True}"/>
+                            <field name="workflow_definition_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="requester_id" readonly="1"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+                    
+                    <!-- Pièces jointes -->
+                    <group name="attachments" string="🔖 Référence &amp; pièces">
+                        <group>
+                            <field name="attachment_count" string="Nombre de pièces jointes"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Pièces jointes" name="attachments_tab">
+                            <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                        </page>
+                        <page string="Historique" name="history_tab">
+                            <div class="oe_chatter">
+                                <field name="message_follower_ids"/>
+                                <field name="activity_ids"/>
+                                <field name="message_ids"/>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                
+                <!-- Chatter pour les discussions -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" groups="base.group_user"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VUE LISTE (TREE) - DEMANDES DE WORKFLOW
+         Interface principale inspirée du mockup bancaire professionnel
+         ================================================================ -->
+    
+    <record id="view_workflow_request_tree" model="ir.ui.view">
+        <field name="name">workflow.request.tree</field>
+        <field name="model">workflow.request</field>
+        <field name="arch" type="xml">
+            <tree string="Demandes de Workflow" 
+                  class="o_workflow_request_tree"
+                  decoration-muted="state == 'draft'"
+                  decoration-info="state == 'submitted'"
+                  decoration-warning="state == 'in_progress'"
+                  decoration-success="state == 'approved'"
+                  decoration-danger="state == 'rejected'"
+                  create="1"
+                  edit="0"
+                  sample="1">
+                
+                <!-- Référence de la demande -->
+                <field name="name" 
+                       string="Référence" 
+                       widget="char"
+                       decoration-bf="1"/>
+                
+                <!-- Type de workflow -->
+                <field name="workflow_type_id" 
+                       string="Type de Workflow"
+                       optional="show"/>
+                
+                <!-- Circuit de validation -->
+                <field name="workflow_definition_id" 
+                       string="Circuit"
+                       optional="show"/>
+                
+                <!-- Demandeur -->
+                <field name="requester_id" 
+                       string="Demandeur"
+                       widget="many2one_avatar_user"
+                       optional="show"/>
+                
+                <!-- Description -->
+                <field name="description" 
+                       string="Description"
+                       optional="show"/>
+                
+                <!-- Statut avec badge coloré -->
+                <field name="state" 
+                       string="Statut"
+                       widget="badge"
+                       decoration-info="state == 'draft'"
+                       decoration-primary="state == 'submitted'"
+                       decoration-warning="state == 'in_progress'"
+                       decoration-success="state == 'approved'"
+                       decoration-danger="state in ('rejected', 'cancelled')"
+                       optional="show"/>
+                
+                <!-- Actif -->
+                <field name="active" 
+                       invisible="1"/>
+                
+                <!-- Créateur -->
+                <field name="create_uid" 
+                       string="Créé par"
+                       widget="many2one_avatar_user"
+                       optional="hide"/>
+                
+                <!-- Date de création -->
+                <field name="create_date" 
+                       string="Créé le"
+                       widget="datetime"
+                       optional="show"/>
+                
+            </tree>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         VUE RECHERCHE - DEMANDES DE WORKFLOW
+         Filtres et groupements pour faciliter la navigation
+         ================================================================ -->
+    
+    <record id="view_workflow_request_search" model="ir.ui.view">
+        <field name="name">workflow.request.search</field>
+        <field name="model">workflow.request</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher des demandes">
+                
+                <!-- Barre de recherche -->
+                <field name="name" string="Référence" filter_domain="[('name', 'ilike', self)]"/>
+                <field name="description" string="Description" filter_domain="[('description', 'ilike', self)]"/>
+                <field name="requester_id" string="Demandeur"/>
+                <field name="workflow_type_id" string="Type"/>
+                <field name="workflow_definition_id" string="Circuit"/>
+                
+                <!-- Séparateur -->
+                <separator/>
+                
+                <!-- Filtres prédéfinis -->
+                <filter string="En cours" 
+                        name="filter_pending" 
+                        domain="[('state', 'in', ['submitted', 'in_progress'])]"/>
+                
+                <filter string="Mes demandes" 
+                        name="my_requests" 
+                        domain="[('requester_id', '=', uid)]"/>
+                
+                <separator/>
+                
+                <!-- Filtres par statut -->
+                <filter string="Brouillon" 
+                        name="filter_draft" 
+                        domain="[('state', '=', 'draft')]"/>
+                
+                <filter string="Soumis" 
+                        name="filter_submitted" 
+                        domain="[('state', '=', 'submitted')]"/>
+                
+                <filter string="Approuvé" 
+                        name="filter_approved" 
+                        domain="[('state', '=', 'approved')]"/>
+                
+                <filter string="Refusé" 
+                        name="filter_refused" 
+                        domain="[('state', '=', 'rejected')]"/>
+                
+                <filter string="Annulé" 
+                        name="filter_cancelled" 
+                        domain="[('state', '=', 'cancelled')]"/>
+                
+                <separator/>
+                
+                <!-- Filtres temporels -->
+                <filter string="Cette semaine" 
+                        name="filter_this_week"
+                        domain="[('create_date', '&gt;=', (context_today() - datetime.timedelta(days=7)).strftime('%Y-%m-%d'))]"/>
+                
+                <filter string="Ce mois" 
+                        name="filter_this_month"
+                        domain="[('create_date', '&gt;=', (context_today().replace(day=1)).strftime('%Y-%m-%d'))]"/>
+                
+                <!-- Groupements -->
+                <group expand="0" string="Grouper par">
+                    <filter string="Statut" name="group_status" context="{'group_by': 'state'}"/>
+                    <filter string="Type de workflow" name="group_type" context="{'group_by': 'workflow_type_id'}"/>
+                    <filter string="Circuit" name="group_definition" context="{'group_by': 'workflow_definition_id'}"/>
+                    <filter string="Demandeur" name="group_requester" context="{'group_by': 'requester_id'}"/>
+                </group>
+                
+            </search>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         ACTION FENÊTRE - DEMANDES DE WORKFLOW
+         ================================================================ -->
+    
+    <record id="action_workflow_request" model="ir.actions.act_window">
+        <field name="name">Demandes de Workflow</field>
+        <field name="res_model">workflow.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{
+            'search_default_my_requests': 1,
+            'search_default_filter_pending': 1,
+        }</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer votre première demande de workflow
+            </p>
+            <p>
+                Le système de workflow vous permet de gérer vos processus de validation multi-niveaux.<br/>
+                Cliquez sur "Créer" pour soumettre une nouvelle demande.
+            </p>
+        </field>
+    </record>
+
+    <!-- ===================================================================
+         MENU PRINCIPAL - WORKFLOW
+         ================================================================ -->
+    
+    <menuitem id="menu_workflow_root"
+              name="Workflow"
+              sequence="10"/>
+    
+    <menuitem id="menu_workflow_requests"
+              name="Demandes"
+              parent="menu_workflow_root"
+              sequence="10"/>
+    
+    <menuitem id="menu_workflow_request_all"
+              name="Toutes les demandes"
+              parent="menu_workflow_requests"
+              action="action_workflow_request"
+              sequence="10"/>
+
+</odoo>

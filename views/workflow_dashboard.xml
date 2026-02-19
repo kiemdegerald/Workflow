@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ===================================================================
+         TEMPLATE DASHBOARD - TABLEAU DE BORD WORKFLOW
+         Interface d'accueil avec statistiques et demandes récentes
+         Style inspiré du mockup bancaire professionnel
+         ================================================================ -->
+    
+    <template id="workflow_dashboard" name="Workflow Dashboard">
+        <t t-call="web.layout">
+            <t t-set="head">
+                <link rel="stylesheet" href="/workflow/static/src/css/workflow_dashboard.css"/>
+            </t>
+            
+            <div class="workflow-dashboard-container">
+                <!-- En-tête de la page -->
+                <div class="wf-page-header">
+                    <div>
+                        <h1 class="wf-page-title">Tableau de bord</h1>
+                        <p class="wf-page-subtitle">Vue d'ensemble des demandes et validations en cours</p>
+                    </div>
+                </div>
+
+                <!-- Grille de statistiques -->
+                <div class="wf-stats-grid">
+                    <!-- Carte 1: Total demandes -->
+                    <div class="wf-stat-card">
+                        <div class="wf-stat-header">
+                            <span class="wf-stat-label">Total demandes</span>
+                            <div class="wf-stat-icon wf-blue">📋</div>
+                        </div>
+                        <div class="wf-stat-value"><t t-esc="stats['total']"/></div>
+                        <div class="wf-stat-trend wf-up">
+                            <span>↗</span>
+                            <span><t t-esc="stats['total_trend']"/>% ce mois</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 2: En cours -->
+                    <div class="wf-stat-card">
+                        <div class="wf-stat-header">
+                            <span class="wf-stat-label">En cours</span>
+                            <div class="wf-stat-icon wf-orange">⏳</div>
+                        </div>
+                        <div class="wf-stat-value"><t t-esc="stats['in_progress']"/></div>
+                        <div class="wf-stat-trend">
+                            <span>→</span>
+                            <span>Stable</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 3: Approuvées -->
+                    <div class="wf-stat-card">
+                        <div class="wf-stat-header">
+                            <span class="wf-stat-label">Approuvées</span>
+                            <div class="wf-stat-icon wf-green">✓</div>
+                        </div>
+                        <div class="wf-stat-value"><t t-esc="stats['approved']"/></div>
+                        <div class="wf-stat-trend wf-up">
+                            <span>↗</span>
+                            <span><t t-esc="stats['approval_rate']"/>% taux d'approbation</span>
+                        </div>
+                    </div>
+
+                    <!-- Carte 4: Refusées -->
+                    <div class="wf-stat-card">
+                        <div class="wf-stat-header">
+                            <span class="wf-stat-label">Refusées</span>
+                            <div class="wf-stat-icon wf-red">✗</div>
+                        </div>
+                        <div class="wf-stat-value"><t t-esc="stats['rejected']"/></div>
+                        <div class="wf-stat-trend wf-down">
+                            <span>↘</span>
+                            <span><t t-esc="stats['rejection_trend']"/>% vs mois dernier</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tableau des demandes récentes -->
+                <div class="wf-table-container">
+                    <div class="wf-table-header">
+                        <h3 class="wf-table-title">Demandes récentes</h3>
+                        <a href="/web#action=workflow.action_workflow_request&amp;model=workflow.request&amp;view_type=form" 
+                           class="wf-btn wf-btn-primary">+ Nouvelle demande</a>
+                    </div>
+                    
+                    <table class="wf-table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Demandeur</th>
+                                <th>Client</th>
+                                <th>Montant</th>
+                                <th>Type crédit</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="recent_requests" t-as="request">
+                                <tr>
+                                    <td>
+                                        <strong><t t-esc="request['name']"/></strong>
+                                    </td>
+                                    <td><t t-esc="request['requester']"/></td>
+                                    <td><t t-esc="request['client_name'] or '-'"/></td>
+                                    <td>
+                                        <strong>
+                                            <t t-esc="'{:,.0f}'.format(request['amount']).replace(',', ' ')"/> FCFA
+                                        </strong>
+                                    </td>
+                                    <td><t t-esc="request['credit_type_label']"/></td>
+                                    <td>
+                                        <span t-attf-class="wf-badge wf-badge-{{request['state']}}">
+                                            <span class="wf-badge-dot"></span>
+                                            <t t-esc="request['state_label']"/>
+                                        </span>
+                                    </td>
+                                    <td><t t-esc="request['date']"/></td>
+                                </tr>
+                            </t>
+                            
+                            <!-- Message si aucune demande -->
+                            <t t-if="not recent_requests">
+                                <tr>
+                                    <td colspan="7" style="text-align: center; padding: 40px; color: #64748B;">
+                                        Aucune demande récente
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

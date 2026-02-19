@@ -1,0 +1,299 @@
+/* ===================================================================
+   WORKFLOW MODULE - THÈME BANCAIRE PROFESSIONNEL CLAIR
+   Liceli Technologies - Inspiré du mockup workflow_mockup.html
+   Appliqué directement aux vues Odoo natives
+   ================================================================ */
+
+:root {
+    /* Palette bancaire professionnelle */
+    --wf-primary: #0A4B78 !important;
+    --wf-primary-light: #0D5E96 !important;
+    --wf-primary-dark: #083A5E !important;
+    --wf-secondary: #E8953A !important;
+    --wf-success: #16A34A !important;
+    --wf-warning: #F59E0B !important;
+    --wf-danger: #DC2626 !important;
+    --wf-info: #3B82F6 !important;
+    
+    /* Neutres */
+    --wf-gray-50: #F9FAFB !important;
+    --wf-gray-100: #F3F4F6 !important;
+    --wf-gray-200: #E5E7EB !important;
+    --wf-gray-300: #D1D5DB !important;
+    --wf-gray-500: #6B7280 !important;
+    --wf-gray-600: #4B5563 !important;
+    --wf-gray-700: #374151 !important;
+    --wf-gray-900: #111827 !important;
+    
+    /* Backgrounds */
+    --wf-bg-light: #FFFFFF !important;
+    --wf-bg-gray: #F8FAFC !important;
+    
+    /* Borders */
+    --wf-border: #E2E8F0 !important;
+}
+
+    /* Borders */
+    --wf-border: #E2E8F0 !important;
+}
+
+/* ===================================================================
+   VUES WORKFLOW - APPLICATION GLOBALE DU THÈME CLAIR
+   Cible toutes les vues du module workflow
+   ================================================================ */
+
+/* Container principal des vues workflow */
+.o_action_manager .o_action[data-name*="workflow"] {
+    background: var(--wf-bg-gray) !important;
+}
+
+/* Panel de contrôle (header avec bouton Nouveau) */
+.o_action_manager .o_action[data-name*="workflow"] .o_control_panel {
+    background: var(--wf-bg-light) !important;
+    border-bottom: 1px solid var(--wf-border) !important;
+}
+
+/* Bouton Nouveau (Créer) */
+.o_action_manager .o_action[data-name*="workflow"] .o_control_panel .o_cp_buttons .btn-primary {
+    background: var(--wf-primary) !important;
+    border-color: var(--wf-primary) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.5rem !important;
+    transition: all 0.2s !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_control_panel .o_cp_buttons .btn-primary:hover {
+    background: var(--wf-primary-dark) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(10, 75, 120, 0.3) !important;
+}
+
+/* ===================================================================
+   VUE LISTE (TREE)
+   ================================================================ */
+
+/* Conteneur de la liste */
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view {
+    background: var(--wf-bg-light) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--wf-border) !important;
+    overflow: hidden !important;
+    margin: 1rem !important;
+}
+
+/* En-tête du tableau */
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view thead {
+    background: var(--wf-gray-100) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view thead th {
+    color: var(--wf-gray-600) !important;
+    font-weight: 700 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    padding: 1rem 1.25rem !important;
+    border-bottom: 2px solid var(--wf-border) !important;
+}
+
+/* Lignes du tableau */
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody tr {
+    border-bottom: 1px solid var(--wf-border) !important;
+    transition: background-color 0.15s ease !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody tr:hover {
+    background: var(--wf-gray-50) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td {
+    padding: 1rem 1.25rem !important;
+    font-size: 14px !important;
+    color: var(--wf-gray-700) !important;
+}
+
+/* ===================================================================
+   BADGES DE STATUT
+   ================================================================ */
+
+/* Badge générique Odoo */
+.o_action_manager .o_action[data-name*="workflow"] .badge {
+    padding: 0.375rem 0.75rem !important;
+    border-radius: 6px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+}
+
+/* Statuts spécifiques avec couleurs bancaires */
+/* Brouillon - Gris */
+.o_action_manager .o_action[data-name*="workflow"] tr.text-muted,
+.o_action_manager .o_action[data-name*="workflow"] .text-muted {
+    opacity: 0.75 !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .badge.text-muted {
+    background: rgba(107, 114, 128, 0.1) !important;
+    color: var(--wf-gray-600) !important;
+}
+
+/* Soumis - Bleu info */
+.o_action_manager .o_action[data-name*="workflow"] tr.text-info {
+    background: rgba(59, 130, 246, 0.03) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .badge.text-info {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: var(--wf-info) !important;
+}
+
+/* En cours - Orange warning */
+.o_action_manager .o_action[data-name*="workflow"] tr.text-warning {
+    background: rgba(232, 149, 58, 0.03) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .badge.text-warning {
+    background: rgba(232, 149, 58, 0.1) !important;
+    color: var(--wf-secondary) !important;
+}
+
+/* Approuvé - Vert success */
+.o_action_manager .o_action[data-name*="workflow"] tr.text-success {
+    background: rgba(22, 163, 74, 0.03) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .badge.text-success {
+    background: rgba(22, 163, 74, 0.1) !important;
+    color: var(--wf-success) !important;
+}
+
+/* Refusé - Rouge danger */
+.o_action_manager .o_action[data-name*="workflow"] tr.text-danger {
+    background: rgba(220, 38, 38, 0.03) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .badge.text-danger {
+    background: rgba(220, 38, 38, 0.1) !important;
+    color: var(--wf-danger) !important;
+}
+
+/* ===================================================================
+   VUE FORMULAIRE
+   ================================================================ */
+
+/* Conteneur du formulaire */
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view {
+    background: var(--wf-bg-gray) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_form_sheet_bg {
+    background: var(--wf-bg-gray) !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_form_sheet {
+    background: var(--wf-bg-light) !important;
+    border-radius: 12px !important;
+    border: 1px solid var(--wf-border) !important;
+    padding: 2rem !important;
+}
+
+/* En-tête du formulaire avec statusbar */
+.o_action_manager .o_action[data-name*="workflow"] .o_form_statusbar {
+    background: var(--wf-gray-100) !important;
+    border-bottom: 1px solid var(--wf-border) !important;
+    padding: 1rem 1.5rem !important;
+}
+
+/* Boutons d'action dans le formulaire */
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .btn-primary {
+    background: var(--wf-primary) !important;
+    border-color: var(--wf-primary) !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    padding: 0.5rem 1.25rem !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .btn-secondary {
+    background: var(--wf-bg-light) !important;
+    border: 1px solid var(--wf-border) !important;
+    color: var(--wf-gray-700) !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+}
+
+/* Champs de formulaire */
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget input,
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget select,
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget textarea {
+    border: 1px solid var(--wf-border) !important;
+    border-radius: 8px !important;
+    padding: 0.625rem !important;
+    transition: all 0.2s !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget input:focus,
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget select:focus,
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view .o_field_widget textarea:focus {
+    border-color: var(--wf-primary) !important;
+    box-shadow: 0 0 0 3px rgba(10, 75, 120, 0.1) !important;
+}
+
+/* Labels des champs */
+.o_action_manager .o_action[data-name*="workflow"] .o_form_view label.o_form_label {
+    color: var(--wf-gray-700) !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+}
+
+/* ===================================================================
+   BARRE DE RECHERCHE
+   ================================================================ */
+
+.o_action_manager .o_action[data-name*="workflow"] .o_searchview {
+    background: var(--wf-bg-light) !important;
+    border: 1px solid var(--wf-border) !important;
+    border-radius: 8px !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_searchview input {
+    border: none !important;
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_searchview .o_searchview_facet {
+    background: var(--wf-primary) !important;
+    color: white !important;
+    border-radius: 6px !important;
+}
+
+/* ===================================================================
+   ANIMATIONS
+   ================================================================ */
+
+@keyframes wf-fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.o_action_manager .o_action[data-name*="workflow"] .o_content {
+    animation: wf-fadeIn 0.3s ease !important;
+}
+
+/* ===================================================================
+   RESPONSIVE
+   ================================================================ */
+
+@media (max-width: 768px) {
+    .o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td,
+    .o_action_manager .o_action[data-name*="workflow"] .o_list_view thead th {
+        padding: 0.75rem !important;
+        font-size: 13px !important;
+    }
+}

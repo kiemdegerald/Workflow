@@ -1,0 +1,328 @@
+/* ====================================================================
+   WORKFLOW DASHBOARD - STYLES DU TABLEAU DE BORD
+   Interface d'accueil avec statistiques et tableau récent
+   Style bancaire professionnel inspiré du mockup
+   ==================================================================== */
+
+/* Variables CSS personnalisées */
+:root {
+    --wf-primary: #0A4B78;
+    --wf-primary-light: #0D5E96;
+    --wf-primary-dark: #083A5E;
+    --wf-secondary: #E8953A;
+    --wf-success: #16A34A;
+    --wf-warning: #F59E0B;
+    --wf-danger: #DC2626;
+    --wf-info: #3B82F6;
+    
+    --wf-gray-50: #F9FAFB;
+    --wf-gray-100: #F3F4F6;
+    --wf-gray-200: #E5E7EB;
+    --wf-gray-300: #D1D5DB;
+    --wf-gray-400: #9CA3AF;
+    --wf-gray-500: #6B7280;
+    --wf-gray-600: #4B5563;
+    --wf-gray-700: #374151;
+    --wf-gray-800: #1F2937;
+    --wf-gray-900: #111827;
+    
+    --wf-bg-primary: #FFFFFF;
+    --wf-bg-secondary: #F8FAFC;
+    --wf-bg-tertiary: #F1F5F9;
+    
+    --wf-border-light: #E2E8F0;
+    --wf-border-medium: #CBD5E1;
+    
+    --wf-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --wf-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    --wf-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+    --wf-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+}
+
+/* Conteneur principal du dashboard */
+.workflow-dashboard-container {
+    padding: 2rem;
+    background: var(--wf-bg-secondary);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===== EN-TÊTE DE PAGE ===== */
+.wf-page-header {
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.wf-page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--wf-gray-900);
+    margin-bottom: 0.5rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.wf-page-subtitle {
+    color: var(--wf-gray-600);
+    font-size: 14px;
+}
+
+/* ===== GRILLE DE STATISTIQUES ===== */
+.wf-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+/* Carte de statistique */
+.wf-stat-card {
+    background: var(--wf-bg-primary);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid var(--wf-border-light);
+    transition: all 0.2s ease;
+}
+
+.wf-stat-card:hover {
+    box-shadow: var(--wf-shadow-lg);
+    transform: translateY(-4px);
+}
+
+.wf-stat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.wf-stat-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--wf-gray-600);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.wf-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.wf-stat-icon.wf-blue { 
+    background: rgba(59, 130, 246, 0.1); 
+    color: var(--wf-info); 
+}
+
+.wf-stat-icon.wf-green { 
+    background: rgba(22, 163, 74, 0.1); 
+    color: var(--wf-success); 
+}
+
+.wf-stat-icon.wf-orange { 
+    background: rgba(232, 149, 58, 0.1); 
+    color: var(--wf-secondary); 
+}
+
+.wf-stat-icon.wf-red { 
+    background: rgba(220, 38, 38, 0.1); 
+    color: var(--wf-danger); 
+}
+
+.wf-stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--wf-gray-900);
+    margin-bottom: 0.5rem;
+    font-family: 'IBM Plex Sans', sans-serif;
+}
+
+.wf-stat-trend {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--wf-gray-600);
+}
+
+.wf-stat-trend.wf-up { 
+    color: var(--wf-success); 
+}
+
+.wf-stat-trend.wf-down { 
+    color: var(--wf-danger); 
+}
+
+/* ===== TABLEAU DES DEMANDES RÉCENTES ===== */
+.wf-table-container {
+    background: var(--wf-bg-primary);
+    border-radius: 12px;
+    border: 1px solid var(--wf-border-light);
+    overflow: hidden;
+}
+
+.wf-table-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--wf-border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wf-table-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--wf-gray-900);
+}
+
+/* Bouton principal */
+.wf-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    font-family: 'Inter', sans-serif;
+}
+
+.wf-btn-primary {
+    background: var(--wf-primary);
+    color: white;
+}
+
+.wf-btn-primary:hover {
+    background: var(--wf-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--wf-shadow-md);
+}
+
+/* Tableau */
+.wf-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.wf-table thead {
+    background: var(--wf-bg-secondary);
+}
+
+.wf-table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--wf-gray-600);
+    border-bottom: 1px solid var(--wf-border-light);
+}
+
+.wf-table td {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--wf-border-light);
+    font-size: 14px;
+    color: var(--wf-gray-700);
+}
+
+.wf-table tr:last-child td {
+    border-bottom: none;
+}
+
+.wf-table tbody tr {
+    transition: background 0.15s;
+}
+
+.wf-table tbody tr:hover {
+    background: var(--wf-bg-secondary);
+}
+
+/* ===== BADGES DE STATUT ===== */
+.wf-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.375rem 0.75rem;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1;
+}
+
+.wf-badge-draft { 
+    background: rgba(107, 114, 128, 0.1); 
+    color: var(--wf-gray-600); 
+}
+
+.wf-badge-submitted { 
+    background: rgba(59, 130, 246, 0.1); 
+    color: var(--wf-info); 
+}
+
+.wf-badge-in_progress { 
+    background: rgba(232, 149, 58, 0.1); 
+    color: var(--wf-secondary); 
+}
+
+.wf-badge-approved { 
+    background: rgba(22, 163, 74, 0.1); 
+    color: var(--wf-success); 
+}
+
+.wf-badge-rejected { 
+    background: rgba(220, 38, 38, 0.1); 
+    color: var(--wf-danger); 
+}
+
+.wf-badge-cancelled { 
+    background: rgba(107, 114, 128, 0.1); 
+    color: var(--wf-gray-600); 
+}
+
+.wf-badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .workflow-dashboard-container {
+        padding: 1rem;
+    }
+    
+    .wf-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .wf-page-title {
+        font-size: 24px;
+    }
+    
+    .wf-table-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+    
+    .wf-table {
+        font-size: 13px;
+    }
+    
+    .wf-table th,
+    .wf-table td {
+        padding: 0.75rem 1rem;
+    }
+}
