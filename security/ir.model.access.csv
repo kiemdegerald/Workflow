@@ -1,0 +1,13 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_workflow_type_user,access.workflow.type.user,model_workflow_type,base.group_user,1,1,1,1
+access_workflow_definition_user,access.workflow.definition.user,model_workflow_definition,base.group_user,1,1,1,1
+access_workflow_level_user,access.workflow.level.user,model_workflow_level,base.group_user,1,1,1,1
+access_workflow_routing_rule_user,access.workflow.routing.rule.user,model_workflow_routing_rule,base.group_user,1,1,1,1
+access_workflow_request_user,access.workflow.request.user,model_workflow_request,base.group_user,1,1,1,1
+access_workflow_request_approval_user,access.workflow.request.approval.user,model_workflow_request_approval,base.group_user,1,1,1,1
+access_workflow_request_comment_user,access.workflow.request.comment.user,model_workflow_request_comment,base.group_user,1,1,1,1
+access_workflow_instance_user,access.workflow.instance.user,model_workflow_instance,base.group_user,1,1,1,1
+access_workflow_custom_field_user,access.workflow.custom.field.user,model_workflow_custom_field,base.group_user,1,1,1,1
+access_workflow_request_document_user,access.workflow.request.document.user,model_workflow_request_document,base.group_user,1,1,1,1
+access_workflow_notification_user,access.workflow.notification.user,model_workflow_notification,base.group_user,1,1,1,1
+access_workflow_audit_log_user,access.workflow.audit.log.user,model_workflow_audit_log,base.group_user,1,1,1,0

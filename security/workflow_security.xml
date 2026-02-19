@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="0">
+
+        <!-- Catégories de Sécurité -->
+        <record id="module_category_workflow" model="ir.module.category">
+            <field name="name">Workflow</field>
+            <field name="description">Gestion des droits d'accès au module Workflow</field>
+            <field name="sequence">10</field>
+        </record>
+
+        <!-- Groupe : Utilisateur Workflow -->
+        <record id="group_workflow_user" model="res.groups">
+            <field name="name">Utilisateur Workflow</field>
+            <field name="category_id" ref="module_category_workflow"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        </record>
+
+        <!-- Groupe : Gestionnaire Workflow -->
+        <record id="group_workflow_manager" model="res.groups">
+            <field name="name">Gestionnaire Workflow</field>
+            <field name="category_id" ref="module_category_workflow"/>
+            <field name="implied_ids" eval="[(4, ref('group_workflow_user'))]"/>
+        </record>
+
+    </data>
+</odoo>

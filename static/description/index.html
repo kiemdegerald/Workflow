@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow - Gestion de Validation Multi-Niveaux</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        .section {
+            background: white;
+            padding: 30px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+            margin-top: 0;
+        }
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .feature {
+            padding: 20px;
+            border-left: 4px solid #667eea;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #764ba2;
+            font-size: 1.1em;
+        }
+        .feature p {
+            margin: 10px 0 0 0;
+            font-size: 0.95em;
+            color: #666;
+        }
+        .use-cases {
+            list-style: none;
+            padding: 0;
+        }
+        .use-cases li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        .use-cases li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        .badge {
+            display: inline-block;
+            padding: 5px 12px;
+            margin: 5px;
+            background: #667eea;
+            color: white;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔄 Workflow</h1>
+        <p>Système de Validation Hiérarchique Multi-Niveaux</p>
+        <div style="margin-top: 15px;">
+            <span class="badge">v17.0.1.0.0</span>
+            <span class="badge">Odoo Enterprise 17</span>
+            <span class="badge">Liceli Technologies</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📋 Vue d'ensemble</h2>
+        <p>
+            <strong>Workflow</strong> est un module générique de gestion de workflows de validation hiérarchique 
+            conçu spécifiquement pour les institutions bancaires et financières (BADF et autres banques).
+        </p>
+        <p>
+            Le module permet de configurer des circuits de validation multi-niveaux avec routage automatique,
+            logique de retour N-1, et traçabilité complète de toutes les opérations.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>✨ Fonctionnalités Principales</h2>
+        <div class="features">
+            <div class="feature">
+                <h3>🔧 Configuration Flexible</h3>
+                <p>Créez des circuits de validation personnalisés (Circuit A/B/C/D...) adaptés à vos processus métier spécifiques.</p>
+            </div>
+            <div class="feature">
+                <h3>🚦 Routage Automatique</h3>
+                <p>Règles de routage intelligentes selon critères configurables (montant, priorité, type de demande...).</p>
+            </div>
+            <div class="feature">
+                <h3>📊 Validation Multi-Niveaux</h3>
+                <p>Gérez des circuits de validation à plusieurs niveaux avec logique de retour au niveau N-1.</p>
+            </div>
+            <div class="feature">
+                <h3>📝 Traçabilité Complète</h3>
+                <p>Journal d'audit immuable de toutes les actions, décisions et modifications.</p>
+            </div>
+            <div class="feature">
+                <h3>📎 Gestion Documentaire</h3>
+                <p>Attachez et gérez des pièces justificatives à chaque demande de workflow.</p>
+            </div>
+            <div class="feature">
+                <h3>🔔 Notifications Intégrées</h3>
+                <p>Système de notifications automatiques pour tenir tous les acteurs informés.</p>
+            </div>
+            <div class="feature">
+                <h3>⚙️ Champs Personnalisés</h3>
+                <p>Ajoutez dynamiquement des champs spécifiques selon le type de workflow.</p>
+            </div>
+            <div class="feature">
+                <h3>🏢 Multi-Entreprises</h3>
+                <p>Support natif du mode multi-entreprises d'Odoo.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Cas d'Usage</h2>
+        <ul class="use-cases">
+            <li><strong>Validation de Crédits Bancaires</strong> - Circuits automatiques selon montants (< 5M, 5M-50M, ≥ 50M)</li>
+            <li><strong>Approbation de Congés</strong> - Validation hiérarchique des demandes de congé</li>
+            <li><strong>Validation de Bons de Commande</strong> - Approbation des achats selon seuils</li>
+            <li><strong>Demandes de Mission</strong> - Validation des déplacements professionnels</li>
+            <li><strong>Ouverture de Comptes</strong> - Processus d'approbation pour nouveaux clients</li>
+            <li><strong>Opérations Exceptionnelles</strong> - Validation de transactions hors normes</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2>🏗️ Architecture Technique</h2>
+        <p>Le module est construit sur une architecture modulaire composée de 12 modèles Python :</p>
+        <ul style="column-count: 2; column-gap: 30px;">
+            <li><strong>workflow.type</strong> - Types de workflow</li>
+            <li><strong>workflow.definition</strong> - Circuits de validation</li>
+            <li><strong>workflow.level</strong> - Niveaux d'approbation</li>
+            <li><strong>workflow.routing.rule</strong> - Règles de routage</li>
+            <li><strong>workflow.request</strong> - Demandes de validation</li>
+            <li><strong>workflow.request.approval</strong> - Approbations</li>
+            <li><strong>workflow.request.comment</strong> - Commentaires d'échange</li>
+            <li><strong>workflow.instance</strong> - Instances actives</li>
+            <li><strong>workflow.custom.field</strong> - Champs personnalisés</li>
+            <li><strong>workflow.request.document</strong> - Documents attachés</li>
+            <li><strong>workflow.notification</strong> - Notifications</li>
+            <li><strong>workflow.audit.log</strong> - Journal d'audit</li>
+        </ul>
+    </div>
+
+    <div class="section">
+        <h2> Premier Pas</h2>
+        <p>Après installation, commencez par :</p>
+        <ol>
+            <li>Créer vos <strong>Types de Workflow</strong> (Menu Configuration)</li>
+            <li>Définir vos <strong>Circuits de Validation</strong></li>
+            <li>Configurer les <strong>Niveaux d'Approbation</strong> pour chaque circuit</li>
+            <li>Paramétrer les <strong>Règles de Routage Automatique</strong></li>
+            <li>Créer votre première <strong>Demande de Workflow</strong></li>
+        </ol>
+    </div>
+
+    <div class="footer">
+        <p>
+            <strong>Développé par Liceli Technologies</strong><br>
+            🌐 <a href="https://liceli-technologies.com" target="_blank">liceli-technologies.com</a><br>
+            📧 Support : support@liceli-technologies.com<br>
+            📄 Licence : Odoo Proprietary License (OPL-1)
+        </p>
+        <p style="margin-top: 20px; color: #999;">
+            © 2026 Liceli Technologies - Tous droits réservés
+        </p>
+    </div>
+</body>
+</html>
