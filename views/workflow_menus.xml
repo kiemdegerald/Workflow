@@ -5,26 +5,11 @@
          Action pour afficher le dashboard workflow
          ================================================================ -->
     
-    <record id="action_workflow_dashboard_url" model="ir.actions.act_url">
-        <field name="name">Tableau de bord</field>
-        <field name="url">/workflow/dashboard</field>
-        <field name="target">self</field>
-    </record>
-
-    <!-- ===================================================================
-         MENU ROOT - WORKFLOW
-         Menu principal du module workflow
-         ================================================================ -->
-    
-    <menuitem id="menu_workflow_root"
-              name="Workflow"
-              sequence="10"/>
-
     <!-- Menu: Tableau de bord -->
     <menuitem id="menu_workflow_dashboard"
               name="Tableau de bord"
               parent="menu_workflow_root"
-              action="action_workflow_dashboard_url"
+              action="action_workflow_dashboard_server"
               sequence="1"/>
 
     <!-- Menu: Nouvelle demande (ouvre le wizard) -->

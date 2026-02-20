@@ -8,6 +8,7 @@ from . import workflow_request
 from . import workflow_request_approval
 from . import workflow_request_comment
 from . import workflow_instance
+from . import workflow_dashboard
 from . import workflow_custom_field
 from . import workflow_request_document
 from . import workflow_notification
