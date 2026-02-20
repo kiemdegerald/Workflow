@@ -724,6 +724,210 @@
     box-shadow: 0 2px 8px rgba(10, 75, 120, 0.1) !important;
 }
 
+/* ========================================================================
+   WIZARD "CRÉER UNE DEMANDE" - DESIGN BANCAIRE PROFESSIONNEL
+   ======================================================================== */
+
+/* Conteneur principal du wizard */
+.o_workflow_wizard_form .modal-dialog {
+    max-width: 900px !important;
+}
+
+.o_workflow_wizard_form .o_form_sheet {
+    padding: 2rem !important;
+    background: #ffffff !important;
+}
+
+/* Container global des sections */
+.o_wizard_container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-top: 1.5rem;
+}
+
+/* Section individuelle */
+.o_wizard_section {
+    background: var(--wf-bg-light);
+    border: 1px solid var(--wf-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.2s ease;
+}
+
+.o_wizard_section:hover {
+    border-color: var(--wf-primary);
+    box-shadow: 0 4px 12px rgba(10, 75, 120, 0.08);
+}
+
+/* Titre des sections */
+.o_wizard_section_title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--wf-gray-900);
+    margin: 0 0 1.25rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--wf-border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Champs du wizard */
+.o_workflow_wizard_form .o_field_widget input,
+.o_workflow_wizard_form .o_field_widget select,
+.o_workflow_wizard_form .o_field_widget textarea {
+    border-radius: 8px !important;
+    border: 1px solid var(--wf-border) !important;
+    padding: 0.625rem 0.875rem !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+}
+
+.o_workflow_wizard_form .o_field_widget input:focus,
+.o_workflow_wizard_form .o_field_widget select:focus,
+.o_workflow_wizard_form .o_field_widget textarea:focus {
+    border-color: var(--wf-primary) !important;
+    box-shadow: 0 0 0 3px rgba(10, 75, 120, 0.1) !important;
+    outline: none !important;
+}
+
+/* Champ description (textarea) - plus large */
+.o_workflow_wizard_form .o_field_widget textarea {
+    min-height: 120px !important;
+    resize: vertical !important;
+    line-height: 1.6 !important;
+}
+
+/* Champ montant - mis en évidence */
+.o_workflow_wizard_form .o_workflow_amount input {
+    font-weight: 700 !important;
+    color: var(--wf-primary) !important;
+    font-size: 16px !important;
+    border-color: var(--wf-primary) !important;
+}
+
+/* Champ référence preview - lecture seule stylé */
+.o_workflow_wizard_form .o_field_reference_preview input {
+    background: var(--wf-bg-secondary) !important;
+    color: var(--wf-primary) !important;
+    font-weight: 600 !important;
+    border: 1px solid var(--wf-border) !important;
+    cursor: not-allowed;
+}
+
+/* Aperçu du circuit de routage */
+.o_routing_preview {
+    margin-top: 1rem;
+    padding: 0;
+}
+
+.o_routing_preview .alert {
+    margin: 0 !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    border: 1px solid transparent !important;
+}
+
+.o_routing_preview .alert-info {
+    background-color: rgba(13, 110, 253, 0.1) !important;
+    color: #0a4b78 !important;
+    border-color: rgba(13, 110, 253, 0.2) !important;
+}
+
+.o_routing_preview .alert-primary {
+    background-color: rgba(10, 75, 120, 0.1) !important;
+    color: var(--wf-primary) !important;
+    border-color: rgba(10, 75, 120, 0.2) !important;
+}
+
+.o_routing_preview .alert-warning {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+    color: #856404 !important;
+    border-color: rgba(255, 193, 7, 0.2) !important;
+}
+
+.o_routing_preview .alert-danger {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+    color: #721c24 !important;
+    border-color: rgba(220, 53, 69, 0.2) !important;
+}
+
+/* Many2many binary dans le wizard */
+.o_workflow_wizard_form .o_field_many2manybinary .o_attachment {
+    border-radius: 8px !important;
+    border: 1px solid var(--wf-border) !important;
+    transition: all 0.2s ease !important;
+}
+
+.o_workflow_wizard_form .o_field_many2manybinary .o_attachment:hover {
+    border-color: var(--wf-primary) !important;
+    box-shadow: 0 2px 8px rgba(10, 75, 120, 0.1) !important;
+}
+
+/* Footer avec boutons */
+.o_workflow_wizard_form .modal-footer {
+    padding: 1.25rem 1.5rem !important;
+    background: var(--wf-bg-light) !important;
+    border-top: 1px solid var(--wf-border) !important;
+    gap: 0.75rem !important;
+    display: flex !important;
+    justify-content: flex-end !important;
+}
+
+.o_workflow_wizard_form .modal-footer button {
+    border-radius: 8px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid transparent !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-primary,
+.o_workflow_wizard_form .modal-footer .oe_highlight {
+    background: linear-gradient(135deg, var(--wf-primary) 0%, #0a4b78 100%) !important;
+    color: white !important;
+    border: none !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-primary:hover,
+.o_workflow_wizard_form .modal-footer .oe_highlight:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(10, 75, 120, 0.25) !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-secondary {
+    background: white !important;
+    color: var(--wf-gray-700) !important;
+    border: 1px solid var(--wf-border) !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-secondary:hover {
+    background: var(--wf-bg-light) !important;
+    border-color: var(--wf-primary) !important;
+    color: var(--wf-primary) !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-link {
+    color: var(--wf-gray-600) !important;
+    padding: 0.625rem 1rem !important;
+}
+
+.o_workflow_wizard_form .modal-footer .btn-link:hover {
+    color: var(--wf-gray-800) !important;
+    background: transparent !important;
+}
+
+/* Champs requis - indicateur visuel */
+.o_workflow_wizard_form .o_field_required label::after {
+    content: " *";
+    color: var(--wf-danger);
+    font-weight: 700;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td,

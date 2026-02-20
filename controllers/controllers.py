@@ -11,22 +11,38 @@ class WorkflowDashboardController(http.Controller):
     """
 
     @http.route('/workflow/dashboard', type='http', auth='user', website=True)
-    def workflow_dashboard(self, **kwargs):
+    def workflow_dashboard(self, page=1, **kwargs):
         """
         Affiche le tableau de bord avec statistiques et demandes récentes
         """
+        # Pagination
+        try:
+            page = int(page)
+        except:
+            page = 1
+        
+        limit = 10  # Nombre d'éléments par page
+        offset = (page - 1) * limit
+        
         # Récupération du modèle
         WorkflowRequest = request.env['workflow.request']
         
         # Calcul des statistiques
         stats = self._compute_statistics(WorkflowRequest)
         
-        # Récupération des demandes récentes (10 dernières)
-        recent_requests = self._get_recent_requests(WorkflowRequest, limit=10)
+        # Comptage total pour la pagination
+        total_requests = WorkflowRequest.search_count([])
+        total_pages = (total_requests + limit - 1) // limit  # Arrondi supérieur
+        
+        # Récupération des demandes récentes avec pagination
+        recent_requests = self._get_recent_requests(WorkflowRequest, limit=limit, offset=offset)
         
         return request.render('workflow.workflow_dashboard', {
             'stats': stats,
             'recent_requests': recent_requests,
+            'page': page,
+            'total_pages': total_pages,
+            'total_requests': total_requests,
         })
 
     def _compute_statistics(self, model):
@@ -89,7 +105,7 @@ class WorkflowDashboardController(http.Controller):
             'rejection_trend': rejection_trend,
         }
 
-    def _get_recent_requests(self, model, limit=10):
+    def _get_recent_requests(self, model, limit=10, offset=0):
         """
         Récupère les demandes récentes avec leurs informations formatées
         """
@@ -112,8 +128,8 @@ class WorkflowDashboardController(http.Controller):
             'cancelled': 'Annulée',
         }
         
-        # Recherche des demandes récentes
-        requests = model.search([], order='create_date desc', limit=limit)
+        # Recherche des demandes récentes avec pagination
+        requests = model.search([], order='create_date desc', limit=limit, offset=offset)
         
         result = []
         for req in requests:

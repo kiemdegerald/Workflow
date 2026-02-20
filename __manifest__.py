@@ -58,6 +58,9 @@
         'views/workflow_request_views.xml',
         'views/workflow_dashboard.xml',
         'views/workflow_menus.xml',
+        
+        # Wizards
+        'wizard/workflow_request_wizard_views.xml',
     ],
     'assets': {
         'web.assets_backend': [

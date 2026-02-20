@@ -133,6 +133,32 @@
                             </t>
                         </tbody>
                     </table>
+                    
+                    <!-- Pagination -->
+                    <t t-if="total_pages > 1">
+                        <div class="wf-pagination">
+                            <t t-if="page > 1">
+                                <a t-attf-href="/workflow/dashboard?page={{page - 1}}" class="wf-pagination-btn">
+                                    ← Précédent
+                                </a>
+                            </t>
+                            
+                            <div class="wf-pagination-pages">
+                                <t t-foreach="range(1, total_pages + 1)" t-as="p">
+                                    <a t-attf-href="/workflow/dashboard?page={{p}}" 
+                                       t-attf-class="wf-pagination-page {{' active' if p == page else ''}}">
+                                        <t t-esc="p"/>
+                                    </a>
+                                </t>
+                            </div>
+                            
+                            <t t-if="page &lt; total_pages">
+                                <a t-attf-href="/workflow/dashboard?page={{page + 1}}" class="wf-pagination-btn">
+                                    Suivant →
+                                </a>
+                            </t>
+                        </div>
+                    </t>
                 </div>
             </div>
             </body>

@@ -27,6 +27,13 @@
               action="action_workflow_dashboard_url"
               sequence="1"/>
 
+    <!-- Menu: Nouvelle demande (ouvre le wizard) -->
+    <menuitem id="menu_workflow_new_request"
+              name="➕ Nouvelle demande"
+              parent="menu_workflow_root"
+              action="workflow.action_workflow_request_wizard"
+              sequence="5"/>
+
     <!-- Menu: Demandes -->
     <menuitem id="menu_workflow_requests"
               name="Demandes"

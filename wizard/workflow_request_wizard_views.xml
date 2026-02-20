@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vue formulaire du wizard -->
+    <record id="view_workflow_request_wizard_form" model="ir.ui.view">
+        <field name="name">workflow.request.wizard.form</field>
+        <field name="model">workflow.request.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Créer une demande" class="o_workflow_wizard_form">
+                <sheet>
+                    <!-- En-tête -->
+                    <div class="oe_title mb-3">
+                        <h1 style="font-size: 28px; font-weight: 700; color: #1a1a1a; margin: 0;">
+                            Créer une demande
+                        </h1>
+                        <p style="color: #666; margin: 0.5rem 0 0 0; font-size: 14px;">
+                            Renseignez les informations du dossier de crédit
+                        </p>
+                    </div>
+
+                    <div class="o_wizard_container">
+                        <!-- ============ SECTION 1: INFORMATIONS CLIENT ============ -->
+                        <div class="o_wizard_section">
+                            <h3 class="o_wizard_section_title">👤 Informations client</h3>
+                            <group>
+                                <group>
+                                    <field name="client_number" 
+                                           placeholder="ex. CLT-2026-00784"
+                                           class="o_field_required"/>
+                                    <field name="account_number" 
+                                           placeholder="ex. 001-78459632-01"
+                                           class="o_field_required"/>
+                                </group>
+                                <group>
+                                    <field name="client_name" 
+                                           placeholder="Nom complet"
+                                           class="o_field_required"/>
+                                    <field name="credit_type" 
+                                           class="o_field_required"/>
+                                </group>
+                            </group>
+                        </div>
+
+                        <!-- ============ SECTION 2: DÉTAILS FINANCIERS ============ -->
+                        <div class="o_wizard_section">
+                            <h3 class="o_wizard_section_title">💰 Détails financiers</h3>
+                            <group>
+                                <group>
+                                    <field name="workflow_type_id" 
+                                           class="o_field_required"
+                                           options="{'no_create': True, 'no_open': True}"/>
+                                    <field name="subject" 
+                                           placeholder="ex. Prêt personnel logement"
+                                           class="o_field_required"/>
+                                    <field name="amount" 
+                                           placeholder="0"
+                                           class="o_field_required o_workflow_amount"/>
+                                    <field name="currency_id" invisible="1"/>
+                                </group>
+                                <group>
+                                    <field name="duration_months" 
+                                           placeholder="ex. 60"/>
+                                    <field name="priority"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Aperçu circuit détecté -->
+                            <div class="o_routing_preview">
+                                <field name="detected_circuit_info" nolabel="1"/>
+                            </div>
+                        </div>
+
+                        <!-- ============ SECTION 3: DESCRIPTION ============ -->
+                        <div class="o_wizard_section">
+                            <h3 class="o_wizard_section_title">📝 Contexte et justification</h3>
+                            <field name="description" 
+                                   placeholder="Décrivez le contexte et les justifications de cette demande de crédit..."
+                                   nolabel="1"/>
+                        </div>
+
+                        <!-- ============ SECTION 4: RÉFÉRENCE & PIÈCES ============ -->
+                        <div class="o_wizard_section">
+                            <h3 class="o_wizard_section_title">🔖 Référence &amp; pièces</h3>
+                            <group>
+                                <group>
+                                    <field name="reference_preview" 
+                                           readonly="1"
+                                           class="o_field_reference_preview"/>
+                                </group>
+                                <group>
+                                    <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                                </group>
+                            </group>
+                        </div>
+                    </div>
+                </sheet>
+
+                <!-- Footer avec boutons -->
+                <footer>
+                    <button string="💾 Enregistrer en brouillon" 
+                            name="action_save_draft" 
+                            type="object" 
+                            class="btn-secondary"/>
+                    <button string="🚀 Soumettre la demande" 
+                            name="action_submit_request" 
+                            type="object" 
+                            class="btn-primary oe_highlight"/>
+                    <button string="Annuler" 
+                            class="btn-link" 
+                            special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action pour ouvrir le wizard -->
+    <record id="action_workflow_request_wizard" model="ir.actions.act_window">
+        <field name="name">Créer une demande</field>
+        <field name="res_model">workflow.request.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_workflow_request"/>
+        <field name="binding_view_types">form,tree</field>
+    </record>
+
+</odoo>

@@ -4,6 +4,7 @@ access_workflow_definition_user,access.workflow.definition.user,model_workflow_d
 access_workflow_level_user,access.workflow.level.user,model_workflow_level,base.group_user,1,1,1,1
 access_workflow_routing_rule_user,access.workflow.routing.rule.user,model_workflow_routing_rule,base.group_user,1,1,1,1
 access_workflow_request_user,access.workflow.request.user,model_workflow_request,base.group_user,1,1,1,1
+access_workflow_request_wizard_user,access.workflow.request.wizard.user,model_workflow_request_wizard,base.group_user,1,1,1,1
 access_workflow_request_approval_user,access.workflow.request.approval.user,model_workflow_request_approval,base.group_user,1,1,1,1
 access_workflow_request_comment_user,access.workflow.request.comment.user,model_workflow_request_comment,base.group_user,1,1,1,1
 access_workflow_instance_user,access.workflow.instance.user,model_workflow_instance,base.group_user,1,1,1,1
