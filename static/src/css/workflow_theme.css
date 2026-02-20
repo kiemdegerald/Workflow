@@ -490,12 +490,254 @@
     }
 }
 
+/* ===================================================================
+   FORMULAIRE DÉTAILLÉ - DESIGN BANCAIRE PROFESSIONNEL
+   =================================================================== */
+
+/* Container principal du formulaire */
+.o_workflow_request_form .o_form_sheet_bg {
+    background: var(--wf-bg-light) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    padding: 2rem !important;
+}
+
+/* En-tête du formulaire avec titre */
+.o_workflow_request_form .oe_title h1 {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: var(--wf-gray-900) !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.o_workflow_request_form .oe_title .o_row {
+    font-size: 14px !important;
+    color: var(--wf-gray-500) !important;
+}
+
+.o_workflow_request_form .oe_title .text-muted {
+    color: var(--wf-gray-500) !important;
+}
+
+/* Statusbar amélioré */
+.o_workflow_request_form .o_statusbar_status {
+    background: linear-gradient(to bottom, #f8f9fa, #f1f3f5) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+}
+
+.o_workflow_request_form .o_statusbar_status button {
+    border-radius: 20px !important;
+    padding: 0.5rem 1.25rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+
+.o_workflow_request_form .o_statusbar_status button.btn-primary {
+    background: var(--wf-primary) !important;
+    border-color: var(--wf-primary) !important;
+}
+
+/* Tabs personnalisés */
+.o_workflow_request_form .o_notebook .nav-tabs {
+    border-bottom: 2px solid var(--wf-border) !important;
+    margin-bottom: 1.5rem !important;
+}
+
+.o_workflow_request_form .o_notebook .nav-link {
+    border: none !important;
+    padding: 0.75rem 1.5rem !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    color: var(--wf-gray-600) !important;
+    transition: all 0.2s !important;
+    position: relative !important;
+}
+
+.o_workflow_request_form .o_notebook .nav-link:hover {
+    color: var(--wf-primary) !important;
+    background: var(--wf-bg-gray) !important;
+    border-radius: 8px 8px 0 0 !important;
+}
+
+.o_workflow_request_form .o_notebook .nav-link.active {
+    color: var(--wf-primary) !important;
+    background: transparent !important;
+}
+
+.o_workflow_request_form .o_notebook .nav-link.active::after {
+    content: '' !important;
+    position: absolute !important;
+    bottom: -2px !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 3px !important;
+    background: var(--wf-primary) !important;
+    border-radius: 3px 3px 0 0 !important;
+}
+
+/* Groups dans le formulaire */
+.o_workflow_request_form .o_group .o_group_title {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--wf-gray-900) !important;
+    margin-bottom: 1rem !important;
+    padding-bottom: 0.5rem !important;
+    border-bottom: 2px solid var(--wf-border) !important;
+}
+
+/* Champs du formulaire */
+.o_workflow_request_form .o_field_widget input,
+.o_workflow_request_form .o_field_widget select,
+.o_workflow_request_form .o_field_widget textarea {
+    border: 1px solid var(--wf-border) !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1rem !important;
+    font-size: 14px !important;
+    transition: all 0.2s !important;
+}
+
+.o_workflow_request_form .o_field_widget input:focus,
+.o_workflow_request_form .o_field_widget select:focus,
+.o_workflow_request_form .o_field_widget textarea:focus {
+    border-color: var(--wf-primary) !important;
+    box-shadow: 0 0 0 3px rgba(10, 75, 120, 0.1) !important;
+    outline: none !important;
+}
+
+/* Montant en évidence */
+.o_workflow_request_form .o_workflow_amount input {
+    font-weight: 700 !important;
+    color: var(--wf-primary) !important;
+    font-size: 16px !important;
+}
+
+/* Alerts dans les tabs */
+.o_workflow_request_form .alert-info {
+    background: rgba(59, 130, 246, 0.08) !important;
+    border-left: 4px solid var(--wf-info) !important;
+    border-radius: 8px !important;
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 1.5rem !important;
+}
+
+/* Timeline de validation */
+.workflow-timeline {
+    position: relative !important;
+    padding-left: 2.5rem !important;
+    margin-top: 1.5rem !important;
+}
+
+.workflow-item {
+    position: relative !important;
+    padding-bottom: 2rem !important;
+}
+
+.workflow-item:last-child {
+    padding-bottom: 0 !important;
+}
+
+.workflow-item::before {
+    content: '' !important;
+    position: absolute !important;
+    left: -2.5rem !important;
+    top: 0 !important;
+    width: 2px !important;
+    height: 100% !important;
+    background: var(--wf-border) !important;
+}
+
+.workflow-item.completed::before {
+    background: var(--wf-success) !important;
+}
+
+.workflow-item.active::before {
+    background: var(--wf-primary) !important;
+}
+
+.workflow-dot {
+    position: absolute !important;
+    left: calc(-2.5rem - 6px) !important;
+    top: 6px !important;
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 50% !important;
+    background: var(--wf-bg-light) !important;
+    border: 3px solid var(--wf-border) !important;
+}
+
+.workflow-item.completed .workflow-dot {
+    border-color: var(--wf-success) !important;
+    background: var(--wf-success) !important;
+}
+
+.workflow-item.active .workflow-dot {
+    border-color: var(--wf-primary) !important;
+    background: var(--wf-primary) !important;
+    box-shadow: 0 0 0 4px rgba(10, 75, 120, 0.15) !important;
+}
+
+.workflow-card {
+    background: var(--wf-bg-gray) !important;
+    border: 1px solid var(--wf-border) !important;
+    border-radius: 12px !important;
+    padding: 1.5rem !important;
+}
+
+.workflow-card.active {
+    background: rgba(10, 75, 120, 0.04) !important;
+    border-color: var(--wf-primary) !important;
+}
+
+.workflow-level {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--wf-gray-500) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    margin-bottom: 0.25rem !important;
+}
+
+.workflow-approver {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: var(--wf-gray-900) !important;
+}
+
+/* Widget many2many_binary pour les documents */
+.o_workflow_request_form .o_field_many2manybinary .o_attachments {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important;
+    gap: 1rem !important;
+}
+
+.o_workflow_request_form .o_field_many2manybinary .o_attachment {
+    border: 1px solid var(--wf-border) !important;
+    border-radius: 8px !important;
+    padding: 1rem !important;
+    transition: all 0.2s !important;
+}
+
+.o_workflow_request_form .o_field_many2manybinary .o_attachment:hover {
+    border-color: var(--wf-primary) !important;
+    box-shadow: 0 2px 8px rgba(10, 75, 120, 0.1) !important;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td,
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view thead th {
         padding: 0.75rem !important;
         font-size: 13px !important;
+    }
+    
+    .o_workflow_request_form .o_form_sheet_bg {
+        padding: 1rem !important;
+    }
+    
+    .o_workflow_request_form .oe_title h1 {
+        font-size: 22px !important;
     }
 }
 

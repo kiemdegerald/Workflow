@@ -2,80 +2,138 @@
 <odoo>
     <!-- ===================================================================
          VUE FORMULAIRE - DEMANDE DE WORKFLOW
-         Formulaire détaillé inspiré du mockup bancaire
+         Formulaire détaillé inspiré du mockup bancaire avec tabs
          ================================================================ -->
     
     <record id="view_workflow_request_form" model="ir.ui.view">
         <field name="name">workflow.request.form</field>
         <field name="model">workflow.request</field>
         <field name="arch" type="xml">
-            <form string="Demande de Workflow">
+            <form string="Demande de Workflow" class="o_workflow_request_form">
                 <!-- En-tête avec statusbar -->
                 <header>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,in_progress,approved"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,submitted,in_progress,approved,rejected"/>
                 </header>
                 
                 <sheet>
-                    <!-- Titre et badge de statut -->
+                    <!-- En-tête de la demande -->
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
+                        <label for="subject" class="oe_edit_only"/>
                         <h1>
-                            <field name="name" readonly="1" placeholder="Référence auto-générée"/>
+                            <field name="subject" placeholder="Titre de la demande" class="o_text_overflow"/>
                         </h1>
+                        <div class="o_row">
+                            <field name="name" readonly="1" class="text-muted"/>
+                            <span class="text-muted"> • Créé le </span>
+                            <field name="create_date" readonly="1" class="text-muted"/>
+                            <span class="text-muted"> par </span>
+                            <field name="requester_id" readonly="1" class="text-muted"/>
+                        </div>
                     </div>
                     
-                    <!-- Informations client -->
-                    <group name="client_info" string="👤 Informations client">
-                        <group>
-                            <field name="client_number" placeholder="ex. CLT-2026-00784"/>
-                            <field name="account_number" placeholder="ex. 001-78459632-01"/>
-                        </group>
-                        <group>
-                            <field name="client_name" placeholder="Nom complet"/>
-                            <field name="credit_type"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Détails financiers -->
-                    <group name="financial_details" string="💰 Détails financiers">
-                        <group>
-                            <field name="subject" placeholder="ex. Prêt personnel logement" required="1"/>
-                            <field name="amount" placeholder="0" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="currency_id" invisible="1"/>
-                        </group>
-                        <group>
-                            <field name="duration_months" placeholder="ex. 60"/>
-                            <field name="priority" widget="priority"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Description / Justification - Champ large sur toute la largeur -->
-                    <group name="description_group" string="📝 Description / Justification" col="1">
-                        <field name="description" placeholder="Décrivez le contexte et la justification de cette demande de crédit..." nolabel="1" widget="text" options="{'rows': 6}" class="oe_inline"/>
-                    </group>
-                    
-                    <!-- Configuration workflow - Masquée par défaut -->
-                    <group name="workflow_config" string="⚙️ Configuration workflow" invisible="1">
-                        <group>
-                            <field name="workflow_type_id" options="{'no_create': True}"/>
-                            <field name="workflow_definition_id" options="{'no_create': True}"/>
-                        </group>
-                        <group>
-                            <field name="requester_id" readonly="1"/>
-                            <field name="active" widget="boolean_toggle"/>
-                        </group>
-                    </group>
-                    
-                    <!-- Pièces jointes -->
-                    <group name="attachments" string="🔖 Référence &amp; pièces">
-                        <group>
-                            <field name="attachment_count" string="Nombre de pièces jointes"/>
-                        </group>
-                    </group>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="active" invisible="1"/>
                     
                     <notebook>
-                        <page string="Pièces jointes" name="attachments_tab">
-                            <field name="attachment_ids" widget="many2many_binary" nolabel="1"/>
+                        <!-- TAB 1: INFORMATIONS -->
+                        <page string="📄 Informations" name="info">
+                            <!-- Informations générales -->
+                            <group string="Informations générales">
+                                <group>
+                                    <field name="workflow_type_id" string="Type de workflow"/>
+                                    <field name="workflow_definition_id" string="Circuit sélectionné"/>
+                                </group>
+                                <group>
+                                    <field name="priority" widget="priority"/>
+                                    <field name="state" invisible="1"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Informations client -->
+                            <group string="👤 Informations client">
+                                <group>
+                                    <field name="client_number" placeholder="ex. CLT-2026-00784"/>
+                                    <field name="account_number" placeholder="ex. 001-78459632-01"/>
+                                </group>
+                                <group>
+                                    <field name="client_name" placeholder="Nom complet"/>
+                                    <field name="credit_type"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Détails du crédit -->
+                            <group string="💰 Détails du crédit">
+                                <group>
+                                    <field name="amount" widget="monetary" options="{'currency_field': 'currency_id'}" class="o_workflow_amount"/>
+                                    <field name="duration_months" string="Durée (mois)"/>
+                                </group>
+                                <group>
+                                    <field name="create_uid" string="Créé par" readonly="1"/>
+                                    <field name="write_date" string="Dernière modification" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <!-- Description -->
+                            <group string="📝 Objet du crédit" col="1">
+                                <field name="description" placeholder="Décrivez le contexte et la justification de cette demande de crédit..." nolabel="1" widget="text" options="{'rows': 6}"/>
+                            </group>
+                        </page>
+                        
+                        <!-- TAB 2: CIRCUIT DE VALIDATION -->
+                        <page string="🔄 Circuit de validation" name="circuit">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Circuit de validation :</strong> Cette section affichera la timeline de validation lorsque le module de workflow sera complètement configuré.
+                            </div>
+                            <group string="Configuration du circuit">
+                                <group>
+                                    <field name="workflow_definition_id" string="Circuit assigné"/>
+                                    <field name="state" string="Statut actuel"/>
+                                </group>
+                                <group>
+                                    <field name="current_level_name" string="Niveau actuel" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <separator string="Niveaux de validation configurés"/>
+                            <div class="text-muted">
+                                La timeline de validation visuelle sera affichée ici une fois que les niveaux d'approbation seront configurés.
+                            </div>
+                        </page>
+                        
+                        <!-- TAB 3: DOCUMENTS -->
+                        <page string="📎 Documents" name="documents">
+                            <group>
+                                <field name="attachment_count" string="Nombre de documents"/>
+                            </group>
+                            <field name="attachment_ids" widget="many2many_binary" string="Pièces jointes" nolabel="1"/>
+                        </page>
+                        
+                        <!-- TAB 4: HISTORIQUE -->
+                        <page string="💬 Historique" name="history">
+                            <div class="alert alert-info" role="alert">
+                                <strong>Historique des échanges</strong> : Le fil de discussion et les commentaires des approbateurs apparaîtront ici.
+                            </div>
+                            <!-- Le chatter standard d'Odoo sera utilisé -->
+                            <field name="message_ids" widget="mail_thread" options="{'thread_level': 1}"/>
+                        </page>
+                        
+                        <!-- TAB 5: AUDIT -->
+                        <page string="📜 Audit" name="audit" groups="base.group_system">
+                            <group string="Informations de traçabilité">
+                                <group>
+                                    <field name="create_uid" string="Créé par" readonly="1"/>
+                                    <field name="create_date" string="Date de création" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="write_uid" string="Modifié par" readonly="1"/>
+                                    <field name="write_date" string="Dernière modification" readonly="1"/>
+                                </group>
+                            </group>
+                            
+                            <separator string="Logs de modification"/>
+                            <div class="text-muted">
+                                Les logs détaillés d'audit seront disponibles via le module d'audit Odoo.
+                            </div>
                         </page>
                     </notebook>
                 </sheet>
