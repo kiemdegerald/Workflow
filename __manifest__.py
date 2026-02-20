@@ -51,6 +51,7 @@
         
         # Data
         'data/workflow_sequence.xml',
+        'data/workflow_demo_data.xml',
         
         # Views
         'views/workflow_type_views.xml',

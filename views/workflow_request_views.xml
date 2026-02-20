@@ -113,27 +113,36 @@
                 <field name="name" 
                        string="Référence" 
                        widget="char"
-                       decoration-bf="1"/>
-                
-                <!-- Type de workflow -->
-                <field name="workflow_type_id" 
-                       string="Type de Workflow"
+                       decoration-bf="1"
                        optional="show"/>
+                
+                <!-- Titre / Objet de la demande -->
+                <field name="subject" 
+                       string="Titre"
+                       optional="show"/>
+                
+                <!-- Nom du client demandeur -->
+                <field name="client_name" 
+                       string="Demandeur"
+                       optional="show"/>
+                
+                <!-- Montant demandé -->
+                <field name="amount" 
+                       string="Montant"
+                       widget="monetary"
+                       options="{'currency_field': 'currency_id'}"
+                       decoration-bf="1"
+                       optional="show"/>
+                <field name="currency_id" invisible="1"/>
                 
                 <!-- Circuit de validation -->
                 <field name="workflow_definition_id" 
                        string="Circuit"
                        optional="show"/>
                 
-                <!-- Demandeur -->
-                <field name="requester_id" 
-                       string="Demandeur"
-                       widget="many2one_avatar_user"
-                       optional="show"/>
-                
-                <!-- Description -->
-                <field name="description" 
-                       string="Description"
+                <!-- Niveau actuel -->
+                <field name="current_level_name" 
+                       string="Niveau actuel"
                        optional="show"/>
                 
                 <!-- Statut avec badge coloré -->
@@ -147,21 +156,17 @@
                        decoration-danger="state in ('rejected', 'cancelled')"
                        optional="show"/>
                 
-                <!-- Actif -->
-                <field name="active" 
-                       invisible="1"/>
-                
-                <!-- Créateur -->
-                <field name="create_uid" 
-                       string="Créé par"
-                       widget="many2one_avatar_user"
-                       optional="hide"/>
-                
                 <!-- Date de création -->
                 <field name="create_date" 
-                       string="Créé le"
+                       string="Date création"
                        widget="datetime"
                        optional="show"/>
+                
+                <!-- Champs cachés mais disponibles -->
+                <field name="workflow_type_id" optional="hide"/>
+                <field name="requester_id" optional="hide"/>
+                <field name="description" optional="hide"/>
+                <field name="active" invisible="1"/>
                 
             </tree>
         </field>

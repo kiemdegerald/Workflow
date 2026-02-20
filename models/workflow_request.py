@@ -68,12 +68,50 @@ class WorkflowRequest(models.Model):
     )
     attachment_count = fields.Integer(string='Nombre de pièces', compute='_compute_attachment_count')
     
+    # Niveau actuel (pour affichage liste)
+    current_level_name = fields.Char(
+        string='Niveau actuel',
+        compute='_compute_current_level_name',
+        store=False
+    )
+    
     active = fields.Boolean(string='Actif', default=True)
     
     @api.depends('attachment_ids')
     def _compute_attachment_count(self):
         for record in self:
             record.attachment_count = len(record.attachment_ids)
+    
+    def _compute_current_level_name(self):
+        """
+        Calcule le niveau actuel de validation pour l'affichage dans la liste
+        Version simplifiée - à améliorer quand workflow.instance sera prêt
+        """
+        for record in self:
+            if record.state in ['draft', 'approved', 'rejected', 'cancelled']:
+                record.current_level_name = '—'
+            elif record.state == 'submitted':
+                # Si soumise mais pas encore en validation
+                if record.workflow_definition_id:
+                    # Vérifier si le modèle workflow.level existe
+                    if 'workflow.level' in self.env:
+                        first_level = self.env['workflow.level'].sudo().search([
+                            ('workflow_definition_id', '=', record.workflow_definition_id.id)
+                        ], order='sequence', limit=1)
+                        record.current_level_name = first_level.name if first_level else 'En attente'
+                    else:
+                        record.current_level_name = 'En attente'
+                else:
+                    record.current_level_name = 'En attente'
+            elif record.state == 'in_progress':
+                # Version simplifiée pour affichage
+                if record.workflow_definition_id:
+                    record.current_level_name = 'En validation'
+                else:
+                    record.current_level_name = 'En cours'
+            else:
+                record.current_level_name = '—'
+
     
     @api.model
     def create(self, vals):

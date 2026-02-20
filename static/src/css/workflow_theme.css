@@ -318,6 +318,179 @@
     display: none !important;
 }
 
+/* ===================================================================
+   LISTE DES DEMANDES - STYLE BANCAIRE PROFESSIONNEL
+   =================================================================== */
+
+/* Container principal de la liste */
+.o_workflow_request_tree {
+    background: var(--wf-bg-primary) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+    overflow: hidden !important;
+}
+
+/* En-tête du tableau */
+.o_workflow_request_tree thead {
+    background: linear-gradient(to bottom, #f8f9fa, #f1f3f5) !important;
+    border-bottom: 2px solid var(--wf-primary) !important;
+}
+
+.o_workflow_request_tree thead th {
+    padding: 1rem 1.25rem !important;
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.5px !important;
+    color: var(--wf-text-secondary) !important;
+    border-bottom: 1px solid var(--wf-border-light) !important;
+}
+
+/* Lignes du tableau */
+.o_workflow_request_tree tbody tr {
+    border-bottom: 1px solid var(--wf-border-light) !important;
+    transition: all 0.2s ease !important;
+}
+
+.o_workflow_request_tree tbody tr:hover {
+    background: #f8fafc !important;
+    transform: translateX(2px) !important;
+    box-shadow: 0 2px 8px rgba(10, 75, 120, 0.08) !important;
+    cursor: pointer !important;
+}
+
+.o_workflow_request_tree tbody td {
+    padding: 1rem 1.25rem !important;
+    font-size: 14px !important;
+    color: var(--wf-text-primary) !important;
+    vertical-align: middle !important;
+}
+
+/* Première colonne (Référence) en gras */
+.o_workflow_request_tree tbody tr td:first-child {
+    font-weight: 700 !important;
+    color: var(--wf-primary) !important;
+}
+
+/* Style pour les montants */
+.o_workflow_request_tree .o_field_monetary {
+    font-weight: 700 !important;
+    color: var(--wf-primary) !important;
+    font-size: 14px !important;
+}
+
+/* Style pour les badges de statut */
+.o_workflow_request_tree .badge {
+    padding: 0.35rem 0.75rem !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+/* Badge Brouillon */
+.o_workflow_request_tree .o_data_row.text-muted .badge,
+.o_workflow_request_tree .badge.text-info {
+    background: rgba(156, 163, 175, 0.1) !important;
+    color: #6b7280 !important;
+}
+
+/* Badge Soumise */
+.o_workflow_request_tree .o_data_row.text-info .badge,
+.o_workflow_request_tree .badge.text-primary {
+    background: rgba(59, 130, 246, 0.1) !important;
+    color: #3b82f6 !important;
+}
+
+/* Badge En cours */
+.o_workflow_request_tree .o_data_row.text-warning .badge {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: #f59e0b !important;
+}
+
+/* Badge Approuvée */
+.o_workflow_request_tree .o_data_row.text-success .badge {
+    background: rgba(22, 163, 74, 0.1) !important;
+    color: #16a34a !important;
+}
+
+/* Badge Refusée */
+.o_workflow_request_tree .o_data_row.text-danger .badge {
+    background: rgba(220, 38, 38, 0.1) !important;
+    color: #dc2626 !important;
+}
+
+/* Point coloré dans les badges */
+.o_workflow_request_tree .badge::before {
+    content: "●" !important;
+    font-size: 8px !important;
+}
+
+/* Style du circuit de validation */
+.o_workflow_request_tree .o_field_many2one {
+    color: var(--wf-text-secondary) !important;
+    font-weight: 500 !important;
+}
+
+/* Style niveau actuel */
+.o_workflow_request_tree td[name="current_level_name"] {
+    color: var(--wf-secondary) !important;
+    font-weight: 600 !important;
+}
+
+/* Date de création plus subtile */
+.o_workflow_request_tree .o_field_datetime {
+    color: var(--wf-text-secondary) !important;
+    font-size: 13px !important;
+}
+
+/* Amélioration de la barre de recherche */
+.o_control_panel .o_searchview {
+    border-radius: 8px !important;
+    border: 1px solid var(--wf-border-light) !important;
+    background: var(--wf-bg-primary) !important;
+}
+
+.o_control_panel .o_searchview input {
+    font-size: 14px !important;
+    padding: 0.625rem 1rem !important;
+}
+
+/* Boutons d'action */
+.o_control_panel .btn-primary {
+    background: var(--wf-primary) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0.625rem 1.25rem !important;
+    font-weight: 600 !important;
+    transition: all 0.2s !important;
+}
+
+.o_control_panel .btn-primary:hover {
+    background: var(--wf-primary-dark) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(10, 75, 120, 0.25) !important;
+}
+
+/* Animation d'entrée des lignes */
+.o_workflow_request_tree tbody tr {
+    animation: fadeInUp 0.3s ease-out !important;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
 @media (max-width: 768px) {
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view tbody td,
     .o_action_manager .o_action[data-name*="workflow"] .o_list_view thead th {
