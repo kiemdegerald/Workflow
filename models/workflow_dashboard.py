@@ -8,14 +8,11 @@ class WorkflowDashboard(models.TransientModel):
 
     stats_html = fields.Html('Statistiques', compute='_compute_stats_html')
     page = fields.Integer('Page courante', default=1)
-    total_pages = fields.Integer('Total pages', compute='_compute_stats_html')
-    has_previous = fields.Boolean('A page précédente', compute='_compute_stats_html')
-    has_next = fields.Boolean('A page suivante', compute='_compute_stats_html')
 
     @api.model
-    def action_open_dashboard(self):
+    def action_open_dashboard(self, page=1):
         """Créer et ouvrir le dashboard"""
-        dashboard = self.create({'page': 1})
+        dashboard = self.create({'page': page})
         return {
             'type': 'ir.actions.act_window',
             'name': 'Tableau de bord',
@@ -27,27 +24,12 @@ class WorkflowDashboard(models.TransientModel):
     
     def action_previous_page(self):
         """Page précédente"""
-        if self.page > 1:
-            self.page -= 1
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'workflow.dashboard',
-            'view_mode': 'form',
-            'res_id': self.id,
-            'target': 'current',
-        }
+        new_page = max(1, self.page - 1)
+        return self.action_open_dashboard(page=new_page)
     
     def action_next_page(self):
         """Page suivante"""
-        if self.has_next:
-            self.page += 1
-        return {
-            'type': 'ir.actions.act_window',
-            'res_model': 'workflow.dashboard',
-            'view_mode': 'form',
-            'res_id': self.id,
-            'target': 'current',
-        }
+        return self.action_open_dashboard(page=self.page + 1)
 
     @api.depends('page')
     def _compute_stats_html(self):
@@ -69,11 +51,6 @@ class WorkflowDashboard(models.TransientModel):
             limit = 10
             offset = (page - 1) * limit
             total_pages = (total_requests + limit - 1) // limit if total_requests > 0 else 1
-            
-            # Mettre à jour les champs de pagination
-            rec.total_pages = total_pages
-            rec.has_previous = page > 1
-            rec.has_next = page < total_pages
             
             # Demandes récentes avec pagination
             recent_requests = Request.search([], order='create_date desc', limit=limit, offset=offset)
@@ -202,11 +179,8 @@ class WorkflowDashboard(models.TransientModel):
             html += '''
                             </tbody>
                         </table>
-                        <div style="margin-top: 20px; padding: 15px; text-align: center; color: #6c757d; font-size: 14px; border-top: 1px solid #dee2e6;">
-                            Page {0} sur {1}
-                        </div>
                     </div>
                 </div>
-            '''.format(page, total_pages)
+            '''
             
             rec.stats_html = html

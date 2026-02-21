@@ -6,16 +6,15 @@
         <field name="model">workflow.dashboard</field>
         <field name="arch" type="xml">
             <form string="Tableau de bord" create="false" edit="false" delete="false">
-                <header>
-                    <button name="action_previous_page" string="◀ Précédent" type="object" class="oe_highlight" attrs="{'invisible': [('has_previous', '=', False)]}"/>
-                    <button name="action_next_page" string="Suivant ▶" type="object" class="oe_highlight" attrs="{'invisible': [('has_next', '=', False)]}"/>
-                </header>
                 <sheet>
                     <field name="page" invisible="1"/>
-                    <field name="total_pages" invisible="1"/>
-                    <field name="has_previous" invisible="1"/>
-                    <field name="has_next" invisible="1"/>
                     <field name="stats_html" nolabel="1" widget="html"/>
+                    <group>
+                        <footer style="text-align: center; margin-top: 20px;">
+                            <button name="action_previous_page" string="◀ Précédent" type="object" class="btn btn-secondary"/>
+                            <button name="action_next_page" string="Suivant ▶" type="object" class="btn btn-primary"/>
+                        </footer>
+                    </group>
                 </sheet>
             </form>
         </field>
