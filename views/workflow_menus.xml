@@ -26,18 +26,11 @@
               action="action_workflow_request"
               sequence="10"/>
 
-    <!-- Action temporaire: Vue approbateur (à développer) -->
-    <record id="action_workflow_approvals_coming_soon" model="ir.actions.client">
-        <field name="name">Vue approbateur</field>
-        <field name="tag">display_notification</field>
-        <field name="params" eval="{'message': 'Fonctionnalité en cours de développement', 'type': 'info', 'sticky': False}"/>
-    </record>
-
     <!-- Menu: Vue approbateur -->
     <menuitem id="menu_workflow_approvals"
               name="✓ Vue approbateur"
               parent="menu_workflow_root"
-              action="action_workflow_approvals_coming_soon"
+              action="action_workflow_approval_view"
               sequence="15"/>
 
     <!-- Menu: Configuration -->
@@ -52,17 +45,10 @@
               action="action_workflow_type"
               sequence="10"/>
 
-    <!-- Action temporaire: Circuits (à développer) -->
-    <record id="action_workflow_circuits_coming_soon" model="ir.actions.client">
-        <field name="name">Circuits</field>
-        <field name="tag">display_notification</field>
-        <field name="params" eval="{'message': 'Fonctionnalité en cours de développement', 'type': 'info', 'sticky': False}"/>
-    </record>
-
     <menuitem id="menu_workflow_circuits"
               name="🔄 Circuits"
               parent="menu_workflow_config"
-              action="action_workflow_circuits_coming_soon"
+              action="action_workflow_circuits"
               sequence="20"/>
 
     <!-- Action temporaire: Règles de routage (à développer) -->

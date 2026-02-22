@@ -52,11 +52,14 @@
         # Data
         'data/workflow_sequence.xml',
         'data/workflow_demo_data.xml',
+        'data/workflow_approval_demo_data.xml',
         
         # Views
         'views/workflow_type_views.xml',
         'views/workflow_request_views.xml',
         'views/workflow_dashboard.xml',
+        'views/workflow_approval_view.xml',
+        'views/workflow_circuit_views.xml',
         'views/workflow_menus.xml',
         
         # Wizards

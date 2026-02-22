@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    
+    <!-- ===================================================================
+         DONNÉES DE DÉMO - VUE APPROBATEUR
+         Niveaux de validation et approbations pour tester la vue approbateur
+         ================================================================ -->
+    
+    <!-- Niveaux de validation pour Circuit B (3 niveaux) -->
+    <record id="workflow_level_circuit_b_n1" model="workflow.level">
+        <field name="name">Niveau 1 - Chef d'agence</field>
+        <field name="sequence">10</field>
+        <field name="workflow_definition_id" ref="workflow_definition_circuit_b"/>
+        <field name="description">Validation initiale par le chef d'agence</field>
+    </record>
+    
+    <record id="workflow_level_circuit_b_n2" model="workflow.level">
+        <field name="name">Niveau 2 - Directeur régional</field>
+        <field name="sequence">20</field>
+        <field name="workflow_definition_id" ref="workflow_definition_circuit_b"/>
+        <field name="description">Validation par le directeur régional</field>
+    </record>
+    
+    <record id="workflow_level_circuit_b_n3" model="workflow.level">
+        <field name="name">Niveau 3 - Direction générale</field>
+        <field name="sequence">30</field>
+        <field name="workflow_definition_id" ref="workflow_definition_circuit_b"/>
+        <field name="description">Approbation finale par la direction générale</field>
+    </record>
+    
+    <!-- Approbations pour la demande WF-2025-0042 (demo_request_1) -->
+    <!-- Niveau 1: Approuvé -->
+    <record id="approval_demo_request_1_level_1" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 1 - WF-2025-0042</field>
+        <field name="workflow_request_id" ref="demo_request_1"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n1"/>
+        <field name="approver_id" ref="base.user_root"/>
+        <field name="state">approved</field>
+        <field name="comments">Dossier conforme. Client sérieux avec bon historique de remboursement. Le projet est cohérent et bien documenté. Garanties suffisantes apportées.</field>
+    </record>
+    
+    <!-- Niveau 2: En attente (assigné à l'admin pour le test) -->
+    <record id="approval_demo_request_1_level_2" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 2 - WF-2025-0042</field>
+        <field name="workflow_request_id" ref="demo_request_1"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n2"/>
+        <field name="approver_id" ref="base.user_admin"/>
+        <field name="state">pending</field>
+        <field name="comments"></field>
+    </record>
+    
+    <!-- Niveau 3: En attente (sera activé après niveau 2) -->
+    <record id="approval_demo_request_1_level_3" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 3 - WF-2025-0042</field>
+        <field name="workflow_request_id" ref="demo_request_1"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n3"/>
+        <field name="approver_id" ref="base.user_root"/>
+        <field name="state">pending</field>
+        <field name="comments"></field>
+    </record>
+    
+    <!-- Deuxième demande avec approbation en attente pour l'admin -->
+    <record id="approval_demo_request_6_level_1" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 1 - WF-2025-0037</field>
+        <field name="workflow_request_id" ref="demo_request_6"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n1"/>
+        <field name="approver_id" ref="base.user_root"/>
+        <field name="state">approved</field>
+        <field name="comments">Bon dossier. La cliente a un emploi stable et les revenus sont suffisants pour le remboursement. Terrain déjà acquis.</field>
+    </record>
+    
+    <record id="approval_demo_request_6_level_2" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 2 - WF-2025-0037</field>
+        <field name="workflow_request_id" ref="demo_request_6"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n2"/>
+        <field name="approver_id" ref="base.user_admin"/>
+        <field name="state">pending</field>
+        <field name="comments"></field>
+    </record>
+    
+    <record id="approval_demo_request_6_level_3" model="workflow.request.approval">
+        <field name="name">Approbation Niveau 3 - WF-2025-0037</field>
+        <field name="workflow_request_id" ref="demo_request_6"/>
+        <field name="workflow_level_id" ref="workflow_level_circuit_b_n3"/>
+        <field name="approver_id" ref="base.user_root"/>
+        <field name="state">pending</field>
+        <field name="comments"></field>
+    </record>
+
+</odoo>

@@ -13,3 +13,4 @@ access_workflow_request_document_user,access.workflow.request.document.user,mode
 access_workflow_notification_user,access.workflow.notification.user,model_workflow_notification,base.group_user,1,1,1,1
 access_workflow_audit_log_user,access.workflow.audit.log.user,model_workflow_audit_log,base.group_user,1,1,1,0
 access_workflow_dashboard_user,access.workflow.dashboard.user,model_workflow_dashboard,base.group_user,1,1,1,1
+access_workflow_approval_view_user,access.workflow.approval.view.user,model_workflow_approval_view,base.group_user,1,1,1,1

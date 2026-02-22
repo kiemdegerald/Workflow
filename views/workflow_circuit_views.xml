@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Vue Tree: Liste des Circuits -->
+    <record id="view_workflow_definition_tree" model="ir.ui.view">
+        <field name="name">workflow.definition.tree</field>
+        <field name="model">workflow.definition</field>
+        <field name="arch" type="xml">
+            <tree string="Circuits de Validation">
+                <field name="code" string="Code"/>
+                <field name="name" string="Nom"/>
+                <field name="workflow_type_id" string="Type de Workflow"/>
+                <field name="description" string="Description"/>
+                <field name="active" string="Actif" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form: Détails d'un Circuit -->
+    <record id="view_workflow_definition_form" model="ir.ui.view">
+        <field name="name">workflow.definition.form</field>
+        <field name="model">workflow.definition</field>
+        <field name="arch" type="xml">
+            <form string="Circuit de Validation">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <label for="name" string="Nom du Circuit"/>
+                        <h1>
+                            <field name="name" placeholder="ex: Circuit A — Standard"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group>
+                            <field name="code" placeholder="ex: CIRCUIT_A"/>
+                            <field name="workflow_type_id" options="{'no_create': True, 'no_open': True}"/>
+                        </group>
+                        <group>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <!-- Champ description pleine largeur -->
+                    <div class="o_group" style="width: 100% !important; max-width: none !important;">
+                        <div style="background: #f8f9fa; border: 2px solid #0a4b78; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+                            <label for="description" style="display: block; margin-bottom: 0.75rem; font-weight: 700; font-size: 16px; color: #0a4b78;">
+                                Description du circuit et conditions d'application
+                            </label>
+                            <field name="description" 
+                                   placeholder="Ex: Circuit pour les crédits de moins de 5M FCFA. Nécessite 2 niveaux de validation : Chef d'agence puis Directeur des Engagements..." 
+                                   nolabel="1" 
+                                   widget="text" 
+                                   style="width: 100% !important; min-width: 100% !important; max-width: none !important; min-height: 120px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical; background-color: white; box-sizing: border-box;"/>
+                        </div>
+                    </div>
+
+                    <notebook>
+                        <page string="Niveaux de Validation" name="levels">
+                            <field name="level_ids" nolabel="1">
+                                <tree string="Niveaux" editable="bottom" default_order="sequence">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name" string="Rôle / Niveau"/>
+                                    <field name="description" string="Actions autorisées"/>
+                                    <field name="active" widget="boolean_toggle"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: Circuits -->
+    <record id="action_workflow_circuits" model="ir.actions.act_window">
+        <field name="name">Circuits</field>
+        <field name="res_model">workflow.definition</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer un nouveau circuit de validation
+            </p>
+            <p>
+                Les circuits définissent les niveaux de validation hiérarchique.<br/>
+                Chaque circuit contient une séquence de niveaux d'approbation.
+            </p>
+        </field>
+    </record>
+
+</odoo>

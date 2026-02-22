@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Vue formulaire: Vue Approbateur -->
+    <record id="view_workflow_approval_view_form" model="ir.ui.view">
+        <field name="name">workflow.approval.view.form</field>
+        <field name="model">workflow.approval.view</field>
+        <field name="arch" type="xml">
+            <form string="Vue Approbateur">
+                <sheet>
+                    <field name="request_id" invisible="1"/>
+                    <field name="current_approval_id" invisible="1"/>
+                    
+                    <!-- Affichage HTML du dossier complet -->
+                    <field name="approval_html" widget="html" nolabel="1"/>
+                    
+                    <!-- Séparateur visuel -->
+                    <div style="margin: 2rem 0; border-top: 2px solid #dee2e6;"></div>
+                    
+                    <!-- Section Actions pleine largeur -->
+                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #0a4b78; border-radius: 12px; padding: 2rem; margin: 1rem 0;">
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 700; color: #0a4b78;">⚡ Actions disponibles</h3>
+                        <p style="margin: 0 0 2rem 0; color: #6c757d; font-size: 14px;">Choisissez une action et ajoutez obligatoirement un commentaire</p>
+                        
+                        <!-- Boutons d'action sur 3 colonnes -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                            <button name="action_approve" type="object" string="✓ Valider" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #4caf50 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3) !important; text-align: center !important;"/>
+                            <button name="action_return" type="object" string="↩ Retourner au niveau précédent" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #ff9800 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3) !important; text-align: center !important;"/>
+                            <button name="action_reject" type="object" string="✗ Refuser" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #f44336 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(244, 67, 54, 0.3) !important; text-align: center !important;"/>
+                        </div>
+                        
+                        <!-- Zone de commentaire large -->
+                        <div>
+                            <label for="comment" style="display: block; margin-bottom: 0.75rem; font-weight: 700; font-size: 15px; color: #1a1a1a;">
+                                <span style="color: #dc3545;">*</span> Commentaire obligatoire
+                            </label>
+                            <field name="comment" placeholder="Saisissez votre commentaire ou vos instructions de correction..." nolabel="1" widget="text" style="width: 100%; min-height: 150px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical;"/>
+                        </div>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: Ouvrir la vue approbateur -->
+    <record id="action_workflow_approval_view" model="ir.actions.server">
+        <field name="name">Vue Approbateur</field>
+        <field name="model_id" ref="model_workflow_approval_view"/>
+        <field name="state">code</field>
+        <field name="code">
+action = model.action_open_approval_view()
+        </field>
+    </record>
+
+</odoo>
