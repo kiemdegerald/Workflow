@@ -51,17 +51,10 @@
               action="action_workflow_circuits"
               sequence="20"/>
 
-    <!-- Action temporaire: Règles de routage (à développer) -->
-    <record id="action_workflow_routing_rules_coming_soon" model="ir.actions.client">
-        <field name="name">Règles de routage</field>
-        <field name="tag">display_notification</field>
-        <field name="params" eval="{'message': 'Fonctionnalité en cours de développement', 'type': 'info', 'sticky': False}"/>
-    </record>
-
     <menuitem id="menu_workflow_routing_rules"
               name="📐 Règles de routage"
               parent="menu_workflow_config"
-              action="action_workflow_routing_rules_coming_soon"
+              action="action_workflow_routing_rules"
               sequence="30"/>
 
 </odoo>

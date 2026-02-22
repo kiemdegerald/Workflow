@@ -60,6 +60,7 @@
         'views/workflow_dashboard.xml',
         'views/workflow_approval_view.xml',
         'views/workflow_circuit_views.xml',
+        'views/workflow_routing_rule_views.xml',
         'views/workflow_menus.xml',
         
         # Wizards

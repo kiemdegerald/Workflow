@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    
+    <!-- Vue Tree: Liste des Règles de Routage -->
+    <record id="view_workflow_routing_rule_tree" model="ir.ui.view">
+        <field name="name">workflow.routing.rule.tree</field>
+        <field name="model">workflow.routing.rule</field>
+        <field name="arch" type="xml">
+            <tree string="Règles de Routage">
+                <field name="sequence" string="Ordre" widget="handle"/>
+                <field name="workflow_type_id" string="Type de Workflow"/>
+                <field name="name" string="Nom de la Règle"/>
+                <field name="amount_min" string="Montant min" widget="monetary" options="{'currency_field': 'False'}"/>
+                <field name="amount_max" string="Montant max" widget="monetary" options="{'currency_field': 'False'}"/>
+                <field name="workflow_definition_id" string="Circuit appliqué"/>
+                <field name="active" string="Actif" widget="boolean_toggle"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Vue Form: Détails d'une Règle de Routage -->
+    <record id="view_workflow_routing_rule_form" model="ir.ui.view">
+        <field name="name">workflow.routing.rule.form</field>
+        <field name="model">workflow.routing.rule</field>
+        <field name="arch" type="xml">
+            <form string="Règle de Routage">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                    </div>
+                    
+                    <div class="oe_title">
+                        <label for="name" string="Nom de la Règle"/>
+                        <h1>
+                            <field name="name" placeholder="ex: Crédit - Montant &lt; 5M"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Configuration de base">
+                            <field name="workflow_type_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="sequence" help="Plus le nombre est petit, plus la règle est prioritaire"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Circuit de destination">
+                            <field name="workflow_definition_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+
+                    <!-- Section Conditions pleine largeur -->
+                    <div class="o_group" style="width: 100% !important; max-width: none !important;">
+                        <div style="background: #f8f9fa; border: 2px solid #0a4b78; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
+                            <h3 style="margin: 0 0 1rem 0; font-size: 18px; font-weight: 700; color: #0a4b78;">💰 Conditions d'application</h3>
+                            <p style="margin: 0 0 1.5rem 0; color: #6c757d; font-size: 14px;">
+                                Définissez les montants minimum et maximum pour que cette règle s'applique. 
+                                Laissez vide pour aucune limite sur ce seuil.
+                            </p>
+                            
+                            <group>
+                                <group>
+                                    <field name="amount_min" 
+                                           widget="monetary" 
+                                           options="{'currency_field': 'False'}"
+                                           placeholder="ex: 0"/>
+                                </group>
+                                <group>
+                                    <field name="amount_max" 
+                                           widget="monetary" 
+                                           options="{'currency_field': 'False'}"
+                                           placeholder="ex: 5000000"/>
+                                </group>
+                            </group>
+
+                            <div style="margin-top: 1rem; padding: 1rem; background: white; border-radius: 6px; border-left: 4px solid #0a4b78;">
+                                <p style="margin: 0; font-size: 13px; color: #495057; line-height: 1.6;">
+                                    <strong>Exemple :</strong> Pour un circuit s'appliquant aux crédits entre 5M et 50M FCFA :<br/>
+                                    • Montant minimum = 5 000 000<br/>
+                                    • Montant maximum = 50 000 000
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action: Règles de routage -->
+    <record id="action_workflow_routing_rules" model="ir.actions.act_window">
+        <field name="name">Règles de routage</field>
+        <field name="res_model">workflow.routing.rule</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Créer une nouvelle règle de routage
+            </p>
+            <p>
+                Les règles de routage déterminent automatiquement quel circuit utiliser selon les critères définis.<br/>
+                Les règles sont appliquées dans l'ordre de priorité (séquence).
+            </p>
+        </field>
+    </record>
+
+</odoo>
