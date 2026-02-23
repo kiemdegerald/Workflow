@@ -1,6 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     
+    <!-- Vue liste de sélection: Mes demandes en attente -->
+    <record id="view_workflow_request_approval_selector_tree" model="ir.ui.view">
+        <field name="name">workflow.request.approval.selector.tree</field>
+        <field name="model">workflow.request.approval</field>
+        <field name="arch" type="xml">
+            <tree string="Mes demandes en attente" create="false" delete="false" edit="false" decoration-info="1">
+                <field name="workflow_request_id" string="Demande"/>
+                <field name="workflow_request_id" string="Référence" widget="char"/>
+                <field name="level_id" string="Niveau"/>
+                <field name="create_date" string="Date de réception"/>
+                <button name="action_open_from_selector" type="object" string="📋 Traiter cette demande" class="btn-primary"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- Action: Liste de sélection des demandes -->
+    <record id="action_workflow_approval_selector" model="ir.actions.act_window">
+        <field name="name">Sélectionnez une demande à traiter</field>
+        <field name="res_model">workflow.request.approval</field>
+        <field name="view_mode">tree</field>
+        <field name="view_id" ref="view_workflow_request_approval_selector_tree"/>
+        <field name="domain">[('approver_id', '=', uid), ('state', '=', 'pending')]</field>
+        <field name="context">{}</field>
+        <field name="target">new</field>
+    </record>
+    
     <!-- Vue formulaire: Vue Approbateur -->
     <record id="view_workflow_approval_view_form" model="ir.ui.view">
         <field name="name">workflow.approval.view.form</field>

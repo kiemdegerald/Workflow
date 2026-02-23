@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        
+        <!-- Utilisateur 1: Agent / Demandeur -->
+        <record id="user_workflow_agent" model="res.users">
+            <field name="name">Amadou Diallo</field>
+            <field name="login">agent@workflow.test</field>
+            <field name="password">demo</field>
+            <field name="email">agent@workflow.test</field>
+            <field name="active">True</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <!-- Utilisateur 2: Chef d'agence (Niveau 1) -->
+        <record id="user_workflow_chef" model="res.users">
+            <field name="name">Mariam Koné</field>
+            <field name="login">chef@workflow.test</field>
+            <field name="password">demo</field>
+            <field name="email">chef@workflow.test</field>
+            <field name="active">True</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <!-- Utilisateur 3: Directeur des Engagements (Niveau 2) -->
+        <record id="user_workflow_directeur" model="res.users">
+            <field name="name">Omar Touré</field>
+            <field name="login">directeur@workflow.test</field>
+            <field name="password">demo</field>
+            <field name="email">directeur@workflow.test</field>
+            <field name="active">True</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <!-- Utilisateur 4: DGA - Directeur Général Adjoint (Niveau 3) -->
+        <record id="user_workflow_dga" model="res.users">
+            <field name="name">Sophia Sy</field>
+            <field name="login">dga@workflow.test</field>
+            <field name="password">demo</field>
+            <field name="email">dga@workflow.test</field>
+            <field name="active">True</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="groups_id" eval="[(6, 0, [ref('base.group_user')])]"/>
+        </record>
+
+        <!-- Type de Workflow: Workflow Crédit -->
+        <record id="workflow_type_credit" model="workflow.type">
+            <field name="name">Workflow Crédit</field>
+            <field name="code">CREDIT</field>
+            <field name="description">Workflow de validation des demandes de crédit bancaire</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Circuit A: Standard (< 5M FCFA) -->
+        <record id="workflow_circuit_a" model="workflow.definition">
+            <field name="name">Circuit A — Standard</field>
+            <field name="code">CIRCUIT_A</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="description">Circuit pour les crédits de moins de 5 000 000 FCFA. Nécessite 2 niveaux de validation : Chef d'agence puis Directeur des Engagements.</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Niveaux Circuit A -->
+        <record id="workflow_level_a_n1" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_a"/>
+            <field name="name">Chef d'agence</field>
+            <field name="sequence">10</field>
+            <field name="description">Première validation par le chef d'agence</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_chef')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <record id="workflow_level_a_n2" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_a"/>
+            <field name="name">Directeur des Engagements</field>
+            <field name="sequence">20</field>
+            <field name="description">Validation finale par le directeur des engagements</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_directeur')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Circuit B: Intermédiaire (5M - 50M FCFA) -->
+        <record id="workflow_circuit_b" model="workflow.definition">
+            <field name="name">Circuit B — Intermédiaire</field>
+            <field name="code">CIRCUIT_B</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="description">Circuit pour les crédits entre 5 000 000 et 50 000 000 FCFA. Nécessite 3 niveaux de validation : Chef d'agence, Directeur des Engagements, puis DGA.</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Niveaux Circuit B -->
+        <record id="workflow_level_b_n1" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_b"/>
+            <field name="name">Chef d'agence</field>
+            <field name="sequence">10</field>
+            <field name="description">Première validation par le chef d'agence</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_chef')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <record id="workflow_level_b_n2" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_b"/>
+            <field name="name">Directeur des Engagements</field>
+            <field name="sequence">20</field>
+            <field name="description">Deuxième validation par le directeur des engagements</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_directeur')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <record id="workflow_level_b_n3" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_b"/>
+            <field name="name">DGA</field>
+            <field name="sequence">30</field>
+            <field name="description">Validation finale par le Directeur Général Adjoint</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_dga')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Circuit C: Important (≥ 50M FCFA) -->
+        <record id="workflow_circuit_c" model="workflow.definition">
+            <field name="name">Circuit C — Important</field>
+            <field name="code">CIRCUIT_C</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="description">Circuit pour les crédits de 50 000 000 FCFA et plus. Nécessite 3 niveaux de validation : Chef d'agence, Directeur des Engagements, puis DGA.</field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Niveaux Circuit C -->
+        <record id="workflow_level_c_n1" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_c"/>
+            <field name="name">Chef d'agence</field>
+            <field name="sequence">10</field>
+            <field name="description">Première validation par le chef d'agence</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_chef')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <record id="workflow_level_c_n2" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_c"/>
+            <field name="name">Directeur des Engagements</field>
+            <field name="sequence">20</field>
+            <field name="description">Deuxième validation par le directeur des engagements</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_directeur')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <record id="workflow_level_c_n3" model="workflow.level">
+            <field name="workflow_definition_id" ref="workflow_circuit_c"/>
+            <field name="name">DGA</field>
+            <field name="sequence">30</field>
+            <field name="description">Validation finale par le Directeur Général Adjoint</field>
+            <field name="approver_ids" eval="[(6, 0, [ref('user_workflow_dga')])]"/>
+            <field name="active">True</field>
+        </record>
+
+        <!-- Règles de routage -->
+        <record id="routing_rule_circuit_a" model="workflow.routing.rule">
+            <field name="name">Crédit &lt; 5M → Circuit A</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="workflow_definition_id" ref="workflow_circuit_a"/>
+            <field name="sequence">10</field>
+            <field name="amount_min">0</field>
+            <field name="amount_max">5000000</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="routing_rule_circuit_b" model="workflow.routing.rule">
+            <field name="name">Crédit 5M-50M → Circuit B</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="workflow_definition_id" ref="workflow_circuit_b"/>
+            <field name="sequence">20</field>
+            <field name="amount_min">5000000</field>
+            <field name="amount_max">50000000</field>
+            <field name="active">True</field>
+        </record>
+
+        <record id="routing_rule_circuit_c" model="workflow.routing.rule">
+            <field name="name">Crédit ≥ 50M → Circuit C</field>
+            <field name="workflow_type_id" ref="workflow_type_credit"/>
+            <field name="workflow_definition_id" ref="workflow_circuit_c"/>
+            <field name="sequence">30</field>
+            <field name="amount_min">50000000</field>
+            <field name="active">True</field>
+        </record>
+
+    </data>
+</odoo>

@@ -53,6 +53,7 @@
         'data/workflow_sequence.xml',
         'data/workflow_demo_data.xml',
         'data/workflow_approval_demo_data.xml',
+        'data/workflow_users_demo.xml',
         
         # Views
         'views/workflow_type_views.xml',

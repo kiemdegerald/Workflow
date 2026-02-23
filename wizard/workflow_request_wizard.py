@@ -106,31 +106,58 @@ class WorkflowRequestWizard(models.TransientModel):
 
     @api.depends('amount', 'workflow_type_id')
     def _compute_detected_circuit(self):
-        """Détecte et affiche le circuit qui sera utilisé (simulation pour l'instant)"""
+        """Détecte et affiche le circuit qui sera utilisé"""
         for wizard in self:
-            if wizard.amount and wizard.workflow_type_id:
-                # Simulation de la détection du circuit
-                amount = wizard.amount
-                if amount < 5000000:
-                    circuit = "Circuit A (< 5M)"
-                    color = "info"
-                elif amount < 25000000:
-                    circuit = "Circuit B (5M - 25M)"
-                    color = "primary"
-                elif amount < 100000000:
-                    circuit = "Circuit C (25M - 100M)"
+            if not wizard.amount or not wizard.workflow_type_id:
+                wizard.detected_circuit_info = False
+                continue
+            
+            # Recherche de la règle de routage applicable
+            routing_rules = self.env['workflow.routing.rule'].search([
+                ('workflow_type_id', '=', wizard.workflow_type_id.id),
+                ('active', '=', True),
+            ], order='sequence, id')
+            
+            circuit_found = None
+            for rule in routing_rules:
+                min_ok = not rule.amount_min or wizard.amount >= rule.amount_min
+                max_ok = not rule.amount_max or wizard.amount < rule.amount_max
+                
+                if min_ok and max_ok:
+                    circuit_found = rule.workflow_definition_id
+                    break
+            
+            if circuit_found:
+                # Compter les niveaux du circuit
+                level_count = self.env['workflow.level'].search_count([
+                    ('workflow_definition_id', '=', circuit_found.id),
+                    ('active', '=', True)
+                ])
+                
+                # Déterminer la couleur selon le nombre de niveaux
+                if level_count <= 2:
+                    color = "success"
+                    icon = "✅"
+                elif level_count == 3:
                     color = "warning"
+                    icon = "⚠️"
                 else:
-                    circuit = "Circuit D (> 100M)"
                     color = "danger"
+                    icon = "🔴"
                 
                 wizard.detected_circuit_info = f'''
                     <div class="alert alert-{color}" style="margin: 0; padding: 0.75rem; border-radius: 8px;">
-                        <i class="fa fa-info-circle"></i> <strong>{circuit}</strong> sera automatiquement assigné
+                        <i class="fa fa-route"></i> {icon} <strong>{circuit_found.name}</strong> sera automatiquement assigné
+                        <br/><small style="opacity: 0.85;">{level_count} niveau{"x" if level_count > 1 else ""} de validation</small>
                     </div>
                 '''
             else:
-                wizard.detected_circuit_info = False
+                wizard.detected_circuit_info = '''
+                    <div class="alert alert-warning" style="margin: 0; padding: 0.75rem; border-radius: 8px;">
+                        <i class="fa fa-exclamation-triangle"></i> ⚠️ Aucune règle de routage ne correspond à ce montant.
+                        <br/><small>Veuillez configurer les règles de routage dans Configuration → Règles de routage</small>
+                    </div>
+                '''
 
     def _generate_reference(self):
         """Génère une référence unique pour la demande"""
@@ -150,8 +177,27 @@ class WorkflowRequestWizard(models.TransientModel):
         """Détecte automatiquement le circuit de validation selon les règles métier"""
         self.ensure_one()
         
-        # Pour l'instant, retourne None (logique métier sera implémentée plus tard)
-        # La logique finale utilisera les règles de routage configurées
+        if not self.workflow_type_id or not self.amount:
+            return None
+        
+        # Recherche des règles de routage pour ce type de workflow
+        # Tri par séquence (priorité) - la première règle qui matche est utilisée
+        routing_rules = self.env['workflow.routing.rule'].search([
+            ('workflow_type_id', '=', self.workflow_type_id.id),
+            ('active', '=', True),
+        ], order='sequence, id')
+        
+        # Parcourir les règles et trouver celle qui correspond au montant
+        for rule in routing_rules:
+            # Vérifier les conditions de montant
+            min_ok = not rule.amount_min or self.amount >= rule.amount_min
+            max_ok = not rule.amount_max or self.amount < rule.amount_max
+            
+            if min_ok and max_ok:
+                # Règle trouvée - retourner le circuit associé
+                return rule.workflow_definition_id.id if rule.workflow_definition_id else None
+        
+        # Aucune règle ne correspond - retourner None
         return None
 
     def action_save_draft(self):
@@ -194,6 +240,47 @@ class WorkflowRequestWizard(models.TransientModel):
             'target': 'self',
         }
 
+    def _create_workflow_approvals(self, request):
+        """Crée automatiquement toutes les approbations pour les niveaux du circuit"""
+        if not request.workflow_definition_id:
+            return
+        
+        # Récupérer tous les niveaux du circuit, triés par séquence
+        levels = self.env['workflow.level'].search([
+            ('workflow_definition_id', '=', request.workflow_definition_id.id),
+            ('active', '=', True)
+        ], order='sequence, id')
+        
+        if not levels:
+            return
+        
+        # Créer une approbation pour chaque niveau
+        for idx, level in enumerate(levels):
+            # IMPORTANT : Seul le premier niveau est actif (pending)
+            # Les autres niveaux sont en attente du précédent (waiting)
+            approval_state = 'pending' if idx == 0 else 'waiting'
+            
+            # Déterminer l'approbateur pour ce niveau
+            # Si le niveau a des approbateurs assignés, prendre le premier
+            # Sinon, utiliser l'admin par défaut
+            if level.approver_ids:
+                approver = level.approver_ids[0]
+            else:
+                approver = self.env.ref('base.user_admin', raise_if_not_found=False)
+                if not approver:
+                    approver = self.env['res.users'].search([('active', '=', True)], limit=1)
+            
+            self.env['workflow.request.approval'].create({
+                'name': f"Approbation {level.name} - {request.name}",
+                'workflow_request_id': request.id,
+                'workflow_level_id': level.id,
+                'approver_id': approver.id,
+                'state': approval_state,
+                'comments': '',
+            })
+        
+        return len(levels)
+
     def action_submit_request(self):
         """Soumet la demande directement"""
         self.ensure_one()
@@ -228,10 +315,13 @@ class WorkflowRequestWizard(models.TransientModel):
             'attachment_ids': [(6, 0, self.attachment_ids.ids)],
         })
         
+        # Créer automatiquement toutes les approbations pour les niveaux du circuit
+        nb_levels = self._create_workflow_approvals(request)
+        
         # Message de confirmation dans le chatter
         circuit_info = ""
         if request.workflow_definition_id:
-            circuit_info = f"<br/>Circuit: <strong>{request.workflow_definition_id.name}</strong>"
+            circuit_info = f"<br/>Circuit: <strong>{request.workflow_definition_id.name}</strong> ({nb_levels or 0} niveaux)"
         
         request.message_post(
             body=_("🚀 Demande soumise par %s%s") % (self.env.user.name, circuit_info),

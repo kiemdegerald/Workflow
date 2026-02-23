@@ -41,6 +41,9 @@ class WorkflowApprovalView(models.TransientModel):
             # Historique des décisions
             history_html = self._build_approval_history(all_approvals)
             
+            # Commentaires des niveaux précédents
+            previous_comments_html = self._build_previous_comments(all_approvals, current_approval)
+            
             # Documents
             documents_html = self._build_documents_section(req)
             
@@ -123,6 +126,9 @@ class WorkflowApprovalView(models.TransientModel):
                             {history_html}
                         </div>
 
+                        <!-- Commentaires des niveaux précédents -->
+                        {previous_comments_html}
+
                         <!-- Documents -->
                         {documents_html}
                     </div>
@@ -182,53 +188,239 @@ class WorkflowApprovalView(models.TransientModel):
         return '<div style="display: flex; align-items: flex-start; justify-content: center;">' + ''.join(levels_html) + '</div>'
 
     def _build_approval_history(self, all_approvals):
-        """Construit l'historique des décisions précédentes"""
-        approved_approvals = all_approvals.filtered(lambda a: a.state in ['approved', 'rejected', 'returned'])
+        """Construit le bouton et le modal pour afficher l'historique complet des commentaires"""
+        # Récupérer TOUTES les approbations triées par séquence
+        all_approvals_sorted = all_approvals.sorted(key=lambda a: a.workflow_level_id.sequence)
         
-        if not approved_approvals:
-            return ''
+        if not all_approvals_sorted:
+            return '<div style="background: #f8f9fa; border-radius: 8px; padding: 1rem; text-align: center; color: #6c757d; font-style: italic;">Aucun niveau d\'approbation configuré</div>'
         
+        # Compter les commentaires non vides
+        comment_count = len([a for a in all_approvals_sorted if a.comments and a.comments.strip() != ''])
+        
+        # Construire les items du modal
         history_items = []
         
-        for approval in approved_approvals:
+        for approval in all_approvals_sorted:
             if approval.state == 'approved':
                 border_color = '#198754'
+                icon = '✅'
                 state_label = 'Approuvé'
+                bg_color = '#d1e7dd'
             elif approval.state == 'rejected':
                 border_color = '#dc3545'
+                icon = '❌'
                 state_label = 'Refusé'
-            else:
+                bg_color = '#f8d7da'
+            elif approval.state == 'returned':
                 border_color = '#fd7e14'
-                state_label = 'Retourné'
+                icon = '🔙'
+                state_label = 'Retourné au niveau précédent'
+                bg_color = '#fff3cd'
+            elif approval.state == 'waiting':
+                border_color = '#6c757d'
+                icon = '⏳'
+                state_label = 'En attente du niveau précédent'
+                bg_color = '#e9ecef'
+            else:  # pending
+                border_color = '#0d6efd'
+                icon = '⏸️'
+                state_label = 'En cours de validation'
+                bg_color = '#cfe2ff'
             
             approver_name = approval.approver_id.name if approval.approver_id else 'Utilisateur inconnu'
             level_name = approval.workflow_level_id.name if approval.workflow_level_id else 'Niveau inconnu'
-            comment = approval.comments or 'Aucun commentaire'
+            comment = approval.comments if approval.comments and approval.comments.strip() else 'Pas encore de commentaire'
+            
+            # Formater la date
+            date_str = ''
+            if approval.write_date:
+                date_obj = approval.write_date
+                date_str = date_obj.strftime('%d/%m/%Y à %H:%M')
+            elif approval.create_date:
+                date_obj = approval.create_date
+                date_str = date_obj.strftime('%d/%m/%Y à %H:%M')
+            
+            # Style différent si pas de commentaire
+            comment_style = 'font-style: italic; color: #6c757d;' if comment == 'Pas encore de commentaire' else 'font-style: italic; color: #495057;'
             
             item_html = f'''
-                <div style="padding-left: 1rem; border-left: 3px solid {border_color}; margin-bottom: 1rem;">
-                    <div style="font-size: 13px; color: #6c757d; margin-bottom: 0.25rem;">
-                        <strong>{approver_name}</strong> ({level_name}) • {state_label}
+                <div style="background: {bg_color}; border-left: 4px solid {border_color}; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div style="flex: 1;">
+                            <div style="margin-bottom: 0.5rem;">
+                                <span style="font-size: 20px; margin-right: 0.5rem;">{icon}</span>
+                                <strong style="color: {border_color}; font-size: 15px;">{state_label}</strong>
+                            </div>
+                            <div style="font-size: 14px; color: #495057; margin-bottom: 0.25rem;">
+                                <strong>{approver_name}</strong> • <span style="color: #6c757d;">{level_name}</span>
+                            </div>
+                            {('<div style="font-size: 12px; color: #6c757d;">' + date_str + '</div>') if date_str else ''}
+                        </div>
                     </div>
-                    <div style="color: #495057;">{comment}</div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px; color: #212529; line-height: 1.6; border: 1px solid rgba(0,0,0,0.05);">
+                        <div style="{comment_style}">"{comment}"</div>
+                    </div>
                 </div>
             '''
             history_items.append(item_html)
         
+        # Modal HTML + Bouton
+        modal_html = f'''
+            <!-- Bouton pour ouvrir le modal -->
+            <div style="margin-top: 1rem;">
+                <button onclick="document.getElementById('historyModal').style.display = 'flex'" 
+                        style="background: #0a4b78; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 2px 4px rgba(10,75,120,0.2); transition: all 0.2s;"
+                        onmouseover="this.style.background='#083a5e'; this.style.boxShadow='0 4px 8px rgba(10,75,120,0.3)'"
+                        onmouseout="this.style.background='#0a4b78'; this.style.boxShadow='0 2px 4px rgba(10,75,120,0.2)'">
+                    <span style="font-size: 18px;">�</span>
+                    Voir l'état du workflow ({len(all_approvals_sorted)} niveaux{' • ' + str(comment_count) + ' commentaire(s)' if comment_count > 0 else ''})
+                </button>
+            </div>
+            
+            <!-- Modal -->
+            <div id="historyModal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+                <div style="background: white; border-radius: 16px; width: 90%; max-width: 800px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.2);">
+                    
+                    <!-- En-tête du modal -->
+                    <div style="background: linear-gradient(135deg, #0a4b78 0%, #0d5a8f 100%); color: white; padding: 1.5rem 2rem; border-radius: 16px 16px 0 0; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h2 style="margin: 0; font-size: 22px; font-weight: 700;">� État du Workflow & Commentaires</h2>
+                            <p style="margin: 0.5rem 0 0 0; opacity: 0.9; font-size: 14px;">{len(all_approvals_sorted)} niveau(x) • {comment_count} commentaire(s)</p>
+                        </div>
+                        <button onclick="document.getElementById('historyModal').style.display = 'none'" 
+                                style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 28px; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s;"
+                                onmouseover="this.style.background='rgba(255,255,255,0.3)'"
+                                onmouseout="this.style.background='rgba(255,255,255,0.2)'">×</button>
+                    </div>
+                    
+                    <!-- Corps du modal (scrollable) -->
+                    <div style="padding: 2rem; overflow-y: auto; flex: 1;">
+                        {''.join(history_items)}
+                    </div>
+                    
+                    <!-- Pied du modal -->
+                    <div style="padding: 1rem 2rem; border-top: 1px solid #e9ecef; text-align: right;">
+                        <button onclick="document.getElementById('historyModal').style.display = 'none'" 
+                                style="background: #6c757d; color: white; border: none; padding: 0.75rem 2rem; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;"
+                                onmouseover="this.style.background='#5a6268'"
+                                onmouseout="this.style.background='#6c757d'">Fermer</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Script pour fermer le modal en cliquant en dehors -->
+            <script>
+                document.getElementById('historyModal').addEventListener('click', function(event) {{
+                    if (event.target === this) {{
+                        this.style.display = 'none';
+                    }}
+                }});
+            </script>
+        '''
+
+    def _build_previous_comments(self, all_approvals, current_approval):
+        """Affiche TOUS les commentaires en ordre chronologique depuis workflow.request.comment"""
+        # Récupérer TOUS les commentaires de cette demande, triés par date de création
+        all_comments = self.env['workflow.request.comment'].search([
+            ('request_id', '=', self.request_id.id)
+        ], order='create_date asc')
+        
+        if not all_comments:
+            return ''
+        
+        # Construire les commentaires
+        comment_items = []
+        for comment in all_comments:
+            # Icône et couleur selon le type
+            if comment.comment_type == 'approval_note':
+                icon = '✅'
+                border_color = '#198754'
+                bg_color = '#d1e7dd'
+                state_label = 'Approuvé'
+            elif comment.comment_type == 'rejection_reason':
+                icon = '❌'
+                border_color = '#dc3545'
+                bg_color = '#f8d7da'
+                state_label = 'Refusé'
+            elif comment.comment_type == 'return':
+                icon = '🔙'
+                border_color = '#fd7e14'
+                bg_color = '#fff3cd'
+                state_label = 'Retourné au niveau précédent'
+            elif comment.comment_type == 'clarification':
+                icon = '❓'
+                border_color = '#0dcaf0'
+                bg_color = '#cff4fc'
+                state_label = 'Demande de clarification'
+            elif comment.comment_type == 'response':
+                icon = '💬'
+                border_color = '#6f42c1'
+                bg_color = '#e0cffc'
+                state_label = 'Réponse'
+            else:
+                icon = '📝'
+                border_color = '#6c757d'
+                bg_color = '#f8f9fa'
+                state_label = 'Information'
+            
+            author_name = comment.user_id.name if comment.user_id else 'Utilisateur inconnu'
+            level_name = comment.approval_id.workflow_level_id.name if comment.approval_id and comment.approval_id.workflow_level_id else 'N/A'
+            
+            # Indiquer si c'est l'utilisateur connecté
+            is_current_user = (comment.user_id.id == self.env.user.id)
+            user_badge = ' <span style="background: #0a4b78; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 11px; font-weight: 700;">VOUS</span>' if is_current_user else ''
+            
+            # Formater la date
+            date_str = ''
+            if comment.create_date:
+                date_obj = comment.create_date
+                date_str = date_obj.strftime('%d/%m/%Y à %H:%M')
+            
+            comment_html = f'''
+                <div style="background: {bg_color}; border-left: 4px solid {border_color}; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                        <div style="flex: 1;">
+                            <div style="margin-bottom: 0.5rem;">
+                                <span style="font-size: 18px; margin-right: 0.5rem;">{icon}</span>
+                                <strong style="color: {border_color}; font-size: 14px;">{state_label}</strong>
+                            </div>
+                            <div style="font-size: 13px; color: #495057; margin-bottom: 0.25rem;">
+                                <strong>{author_name}</strong>{user_badge} • <span style="color: #6c757d;">{level_name}</span>
+                            </div>
+                            {('<div style="font-size: 12px; color: #6c757d;">' + date_str + '</div>') if date_str else ''}
+                        </div>
+                    </div>
+                    <div style="background: white; padding: 1rem; border-radius: 6px; border: 1px solid rgba(0,0,0,0.05);">
+                        <div style="color: #212529; line-height: 1.6; font-style: italic;">"{comment.message}"</div>
+                    </div>
+                </div>
+            '''
+            comment_items.append(comment_html)
+        
         return f'''
-            <div style="background: white; border-radius: 8px; padding: 1rem;">
-                <strong style="display: block; margin-bottom: 0.75rem;">✓ Historique des décisions :</strong>
-                {''.join(history_items)}
+            <div style="background: #fff; border: 2px solid #0d6efd; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; color: #0d6efd; font-weight: 600; display: flex; align-items: center; gap: 0.5rem;">
+                    💬 Historique complet des commentaires ({len(comment_items)})
+                </h3>
+                <p style="margin: 0 0 1rem 0; font-size: 13px; color: #6c757d;">Affichage chronologique de tous les commentaires laissés sur cette demande</p>
+                <div style="max-height: 500px; overflow-y: auto;">
+                    {''.join(comment_items)}
+                </div>
             </div>
         '''
+        
+        return modal_html
 
     def _build_documents_section(self, req):
         """Construit la section des documents"""
         
         docs_html = []
         
-        if req.attachment_ids:
-            for attachment in req.attachment_ids:
+        # Utiliser sudo() pour accéder aux pièces jointes
+        attachments = req.sudo().attachment_ids
+        if attachments:
+            for attachment in attachments:
                 # Taille formatée
                 size_kb = attachment.file_size / 1024 if attachment.file_size else 0
                 if size_kb > 1024:
@@ -269,7 +461,7 @@ class WorkflowApprovalView(models.TransientModel):
         pending_approvals = self.env['workflow.request.approval'].search([
             ('approver_id', '=', self.env.user.id),
             ('state', '=', 'pending')
-        ])
+        ], order='create_date desc')
         
         if not pending_approvals:
             # Afficher une notification informative au lieu d'une erreur
@@ -287,10 +479,23 @@ class WorkflowApprovalView(models.TransientModel):
                 }
             }
         
-        # Créer un enregistrement transient avec la première demande en attente
+        # Si plusieurs demandes, afficher d'abord la liste de sélection
+        if len(pending_approvals) > 1:
+            return {
+                'name': f'Sélectionnez une demande à traiter ({len(pending_approvals)} en attente)',
+                'type': 'ir.actions.act_window',
+                'res_model': 'workflow.request.approval',
+                'view_mode': 'tree',
+                'domain': [('approver_id', '=', self.env.user.id), ('state', '=', 'pending')],
+                'target': 'new',
+                'context': self.env.context,
+            }
+        
+        # Créer un enregistrement transient avec la seule demande en attente
         approval_view = self.create({
             'request_id': pending_approvals[0].workflow_request_id.id,
             'current_approval_id': pending_approvals[0].id,
+            'comment': '',  # Valeur par défaut vide, sera rempli par l'utilisateur
         })
         
         return {
@@ -317,18 +522,57 @@ class WorkflowApprovalView(models.TransientModel):
             'comments': self.comment,
         })
         
-        # Vérifier si c'est le dernier niveau
-        next_approval = self.env['workflow.request.approval'].search([
-            ('workflow_request_id', '=', self.request_id.id),
-            ('state', '=', 'pending')
-        ], limit=1)
+        # Créer un commentaire dans l'historique
+        self.env['workflow.request.comment'].create({
+            'name': f"Validation - {self.current_approval_id.workflow_level_id.name}",
+            'request_id': self.request_id.id,
+            'approval_id': self.current_approval_id.id,
+            'user_id': self.env.user.id,
+            'comment_type': 'approval_note',
+            'message': self.comment,
+            'author_level_sequence': self.current_approval_id.workflow_level_id.sequence,
+        })
         
-        if not next_approval:
-            # Tous les niveaux validés, approuver la demande
-            self.request_id.write({'state': 'approved'})
+        # Chercher s'il y a un niveau suivant dans le circuit
+        current_level = self.current_approval_id.workflow_level_id
+        next_level = self.env['workflow.level'].search([
+            ('workflow_definition_id', '=', current_level.workflow_definition_id.id),
+            ('sequence', '>', current_level.sequence)
+        ], order='sequence asc', limit=1)
+        
+        if next_level:
+            # Chercher l'approbation du niveau suivant
+            next_approval = self.env['workflow.request.approval'].search([
+                ('workflow_request_id', '=', self.request_id.id),
+                ('workflow_level_id', '=', next_level.id)
+            ], limit=1)
+            
+            if next_approval:
+                if next_approval.state in ['returned', 'waiting']:
+                    # Le niveau suivant avait retourné la demande, ou était en attente du niveau précédent
+                    # On l'active maintenant
+                    next_approval.write({'state': 'pending'})
+                    self.request_id.write({'state': 'in_progress'})
+                elif next_approval.state == 'pending':
+                    # Le niveau suivant est déjà en attente
+                    self.request_id.write({'state': 'in_progress'})
+                else:
+                    # Le niveau suivant a déjà validé (ne devrait pas arriver)
+                    # Vérifier s'il reste des niveaux en attente
+                    pending_approvals = self.env['workflow.request.approval'].search([
+                        ('workflow_request_id', '=', self.request_id.id),
+                        ('state', '=', 'pending')
+                    ])
+                    if pending_approvals:
+                        self.request_id.write({'state': 'in_progress'})
+                    else:
+                        self.request_id.write({'state': 'approved'})
+            else:
+                # Pas d'approbation suivante trouvée, approuver
+                self.request_id.write({'state': 'approved'})
         else:
-            # Demande toujours en cours
-            self.request_id.write({'state': 'in_progress'})
+            # Pas de niveau suivant, c'est le dernier niveau, approuver
+            self.request_id.write({'state': 'approved'})
         
         return {
             'type': 'ir.actions.client',
@@ -352,6 +596,17 @@ class WorkflowApprovalView(models.TransientModel):
         self.current_approval_id.write({
             'state': 'rejected',
             'comments': self.comment,
+        })
+        
+        # Créer un commentaire dans l'historique
+        self.env['workflow.request.comment'].create({
+            'name': f"Rejet - {self.current_approval_id.workflow_level_id.name}",
+            'request_id': self.request_id.id,
+            'approval_id': self.current_approval_id.id,
+            'user_id': self.env.user.id,
+            'comment_type': 'rejection_reason',
+            'message': self.comment,
+            'author_level_sequence': self.current_approval_id.workflow_level_id.sequence,
         })
         
         # Refuser la demande complète
@@ -379,6 +634,17 @@ class WorkflowApprovalView(models.TransientModel):
         self.current_approval_id.write({
             'state': 'returned',
             'comments': self.comment,
+        })
+        
+        # Créer un commentaire dans l'historique
+        self.env['workflow.request.comment'].create({
+            'name': f"Retour - {self.current_approval_id.workflow_level_id.name}",
+            'request_id': self.request_id.id,
+            'approval_id': self.current_approval_id.id,
+            'user_id': self.env.user.id,
+            'comment_type': 'return',
+            'message': self.comment,
+            'author_level_sequence': self.current_approval_id.workflow_level_id.sequence,
         })
         
         # Trouver le niveau précédent
