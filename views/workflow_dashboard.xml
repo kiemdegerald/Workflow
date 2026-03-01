@@ -8,13 +8,34 @@
             <form string="Tableau de bord" create="false" edit="false" delete="false">
                 <sheet>
                     <field name="page" invisible="1"/>
+                    <field name="mode" invisible="1"/>
+
+                    <!-- Bouton de bascule vers le dashboard Courrier (visible uniquement en mode crédit) -->
+                    <div style="margin-bottom: 8px;" invisible="mode != 'credit'">
+                        <button name="action_switch_to_courrier"
+                                string="📬 Tableau de bord Courrier"
+                                type="object"
+                                class="btn btn-primary"/>
+                    </div>
+
+                    <!-- Bouton de bascule vers le dashboard Crédit (visible uniquement en mode courrier) -->
+                    <div style="margin-bottom: 8px;" invisible="mode != 'courrier'">
+                        <button name="action_switch_to_credit"
+                                string="💳 Tableau de bord Crédit"
+                                type="object"
+                                class="btn btn-success"/>
+                    </div>
+
                     <field name="stats_html" nolabel="1" widget="html"/>
-                    <group>
-                        <footer style="text-align: center; margin-top: 20px;">
-                            <button name="action_previous_page" string="◀ Précédent" type="object" class="btn btn-secondary"/>
-                            <button name="action_next_page" string="Suivant ▶" type="object" class="btn btn-primary"/>
-                        </footer>
-                    </group>
+
+                    <!-- Pagination -->
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; padding: 20px 0;">
+                        <button name="action_previous_page" string="◀ Précédent" type="object"
+                                class="btn btn-secondary"
+                                invisible="page &lt;= 1"/>
+                        <button name="action_next_page" string="Suivant ▶" type="object"
+                                class="btn btn-primary"/>
+                    </div>
                 </sheet>
             </form>
         </field>
@@ -26,5 +47,13 @@
         <field name="model_id" ref="model_workflow_dashboard"/>
         <field name="state">code</field>
         <field name="code">action = model.action_open_dashboard()</field>
+    </record>
+
+    <!-- Action pour ouvrir le dashboard Courrier -->
+    <record id="action_workflow_dashboard_courrier" model="ir.actions.server">
+        <field name="name">Tableau de bord Courrier</field>
+        <field name="model_id" ref="model_workflow_dashboard"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_open_dashboard(mode='courrier')</field>
     </record>
 </odoo>

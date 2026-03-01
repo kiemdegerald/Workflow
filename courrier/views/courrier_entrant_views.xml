@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================================================================
+         VUE LISTE — COURRIER ENTRANT
+         ================================================================ -->
+    <record id="view_courrier_entrant_tree" model="ir.ui.view">
+        <field name="name">workflow.courrier.entrant.tree</field>
+        <field name="model">workflow.courrier.entrant</field>
+        <field name="arch" type="xml">
+            <tree string="Courriers entrants"
+                  decoration-info="state == 'recu'"
+                  decoration-warning="state == 'en_validation'"
+                  decoration-success="state == 'traite'"
+                  decoration-muted="state == 'cloture'">
+                <field name="name" string="Référence"/>
+                <field name="date_reception" string="Date reçu"/>
+                <field name="objet" string="Objet"/>
+                <field name="expediteur" string="Expéditeur"/>
+                <field name="type_courrier" string="Type"/>
+                <field name="priorite" widget="priority" string="Priorité"/>
+                <field name="destinataire_id" string="Destinataire" optional="show"/>
+                <field name="workflow_definition_id" string="Circuit" optional="show"/>
+                <field name="state" string="État" widget="badge"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         VUE FORMULAIRE — COURRIER ENTRANT
+         ================================================================ -->
+    <record id="view_courrier_entrant_form" model="ir.ui.view">
+        <field name="name">workflow.courrier.entrant.form</field>
+        <field name="model">workflow.courrier.entrant</field>
+        <field name="arch" type="xml">
+            <form string="Courrier Entrant">
+                <header>
+                    <button name="action_soumettre"
+                            string="Soumettre au circuit"
+                            type="object"
+                            class="btn-primary"
+                            invisible="state != 'recu'"/>
+                    <button name="action_marquer_traite"
+                            string="Marquer traité"
+                            type="object"
+                            class="btn-success"
+                            invisible="state != 'en_validation'"/>
+                    <button name="action_cloturer"
+                            string="Clôturer"
+                            type="object"
+                            invisible="state not in ['traite']"/>
+                    <button name="action_reouvrir"
+                            string="Réouvrir"
+                            type="object"
+                            class="btn-secondary"
+                            invisible="state not in ['en_validation', 'traite', 'cloture']"/>
+                    <field name="state" widget="statusbar"
+                           statusbar_visible="recu,en_validation,traite,cloture"/>
+                </header>
+
+                <sheet>
+
+                    <!-- Compteur documents (bouton visible en haut à droite) -->
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_voir_documents"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-paperclip"
+                                invisible="attachment_count == 0">
+                            <field name="attachment_count"
+                                   string="Document(s)"
+                                   widget="statinfo"/>
+                        </button>
+                    </div>
+
+                    <!-- Titre -->
+                    <div class="oe_title">
+                        <label for="objet"/>
+                        <h1>
+                            <field name="objet" placeholder="Objet du courrier"/>
+                        </h1>
+                        <div class="o_row">
+                            <field name="name" readonly="1" class="text-muted"/>
+                            <span class="text-muted"> · Reçu le </span>
+                            <field name="date_reception" readonly="1" class="text-muted"/>
+                            <span class="text-muted"> · Enregistré par </span>
+                            <field name="secretaire_id" readonly="1" class="text-muted"/>
+                        </div>
+                    </div>
+
+                    <notebook>
+
+                        <!-- ── Onglet 1 : Informations courrier ─────── -->
+                        <page string="Informations" name="infos">
+                            <group string="Identification">
+                                <group>
+                                    <field name="type_courrier"/>
+                                    <field name="priorite" widget="priority"/>
+                                </group>
+                                <group>
+                                    <field name="date_reception"/>
+                                    <field name="state" invisible="1"/>
+                                </group>
+                            </group>
+
+                            <group string="Expéditeur">
+                                <group>
+                                    <field name="expediteur" placeholder="Nom de l'expéditeur"/>
+                                    <field name="origine" placeholder="Organisation / Service / Ville"/>
+                                </group>
+                            </group>
+
+                            <group string="Résumé" col="1">
+                                <field name="description"
+                                       nolabel="1"
+                                       placeholder="Résumé du courrier, points importants..."
+                                       widget="text"
+                                       options="{'rows': 5}"/>
+                            </group>
+
+                            <group string="Instructions de traitement" col="1">
+                                <field name="instruction"
+                                       nolabel="1"
+                                       placeholder="Instructions données par le responsable..."
+                                       widget="text"
+                                       options="{'rows': 4}"/>
+                            </group>
+                        </page>
+
+                        <!-- ── Onglet 2 : Documents joints ───────────── -->
+                        <page string="📎 Documents" name="documents">
+
+                            <!-- Message d'invite si pas encore de document -->
+                            <div invisible="attachment_count != 0"
+                                 style="text-align:center; padding: 30px; color: #888;">
+                                <p style="font-size:16px;">
+                                    📂 Aucun document joint pour l'instant.
+                                </p>
+                                <p>Scannez et joignez le courrier physique ci-dessous.</p>
+                            </div>
+
+                            <!-- Zone d'upload et liste des fichiers -->
+                            <field name="attachment_ids"
+                                   widget="many2many_binary"
+                                   string="Fichiers joints (scan, PDF, image...)"/>
+
+                        </page>
+
+                        <!-- ── Onglet 3 : Circuit de validation ──────── -->
+                        <page string="Circuit de validation" name="circuit">
+                            <group string="Workflow">
+                                <group>
+                                    <field name="workflow_definition_id"
+                                           options="{'no_create': True}"
+                                           readonly="state != 'recu'"/>
+                                    <field name="workflow_request_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
+
+                    </notebook>
+                </sheet>
+
+                <!-- Fil d'actualité Odoo -->
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         VUE RECHERCHE — COURRIER ENTRANT
+         ================================================================ -->
+    <record id="view_courrier_entrant_search" model="ir.ui.view">
+        <field name="name">workflow.courrier.entrant.search</field>
+        <field name="model">workflow.courrier.entrant</field>
+        <field name="arch" type="xml">
+            <search string="Rechercher un courrier">
+                <field name="name" string="Référence"/>
+                <field name="objet" string="Objet"/>
+                <field name="expediteur" string="Expéditeur"/>
+                <field name="destinataire_id" string="Destinataire"/>
+
+                <filter string="Reçus" name="recu"
+                        domain="[('state', '=', 'recu')]"/>
+                <filter string="En validation" name="en_validation"
+                        domain="[('state', '=', 'en_validation')]"/>
+                <filter string="Traités" name="traite"
+                        domain="[('state', '=', 'traite')]"/>
+                <filter string="Clôturés" name="cloture"
+                        domain="[('state', '=', 'cloture')]"/>
+
+                <separator/>
+
+                <filter string="Urgents" name="urgent"
+                        domain="[('priorite', 'in', ['1','2'])]"/>
+                <filter string="Aujourd'hui" name="today"
+                        domain="[('date_reception', '=', context_today().strftime('%Y-%m-%d'))]"/>
+
+                <group expand="0" string="Regrouper par">
+                    <filter string="État" name="group_state"
+                            context="{'group_by': 'state'}"/>
+                    <filter string="Type" name="group_type"
+                            context="{'group_by': 'type_courrier'}"/>
+                    <filter string="Destinataire" name="group_destinataire"
+                            context="{'group_by': 'destinataire_id'}"/>
+                    <filter string="Date de réception" name="group_date"
+                            context="{'group_by': 'date_reception:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================================================================
+         ACTION — COURRIER ENTRANT
+         ================================================================ -->
+    <record id="action_courrier_entrant" model="ir.actions.act_window">
+        <field name="name">Courriers entrants</field>
+        <field name="res_model">workflow.courrier.entrant</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_courrier_entrant_search"/>
+        <field name="context">{'search_default_recu': 0}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Aucun courrier enregistré pour l'instant
+            </p>
+            <p>
+                Cliquez sur <b>Nouveau</b> pour enregistrer un courrier entrant
+                et le soumettre à un circuit de validation.
+            </p>
+        </field>
+    </record>
+
+</odoo>

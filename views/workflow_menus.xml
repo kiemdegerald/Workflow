@@ -1,39 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
     <!-- ===================================================================
-         ACTION DASHBOARD - TABLEAU DE BORD
-         Action pour afficher le dashboard workflow
+         MODULE UNIQUE : WORKFLOW
+         Un seul module avec deux sections dans la barre de navigation :
+           • 💳 Crédit   → menus liés aux demandes de crédit
+           • 📬 Courrier → menus liés aux courriers entrants
+           • Configuration (partagée)
          ================================================================ -->
-    
-    <!-- Menu: Tableau de bord -->
+
+    <!-- Racine unique de l'application -->
+    <menuitem id="menu_workflow_root"
+              name="Workflow"
+              sequence="10"
+              action="action_workflow_dashboard_server"/>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SECTION 1 — CRÉDIT
+         Apparaît en premier dans la barre de navigation horizontale.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_credit_section"
+              name="💳 Crédit"
+              parent="menu_workflow_root"
+              sequence="10"/>
+
+    <!-- Tableau de bord Crédit -->
     <menuitem id="menu_workflow_dashboard"
               name="Tableau de bord"
-              parent="menu_workflow_root"
+              parent="menu_credit_section"
               action="action_workflow_dashboard_server"
               sequence="1"/>
 
-    <!-- Menu: Nouvelle demande (ouvre le wizard) -->
+    <!-- Nouvelle demande -->
     <menuitem id="menu_workflow_new_request"
               name="➕ Nouvelle demande"
-              parent="menu_workflow_root"
+              parent="menu_credit_section"
               action="workflow.action_workflow_request_wizard"
               sequence="5"/>
 
-    <!-- Menu: Demandes -->
+    <!-- Liste des demandes de crédit -->
     <menuitem id="menu_workflow_requests"
-              name="Demandes"
-              parent="menu_workflow_root"
+              name="Demandes de crédit"
+              parent="menu_credit_section"
               action="action_workflow_request"
               sequence="10"/>
 
-    <!-- Menu: Vue approbateur -->
+    <!-- Vue approbateur Crédit -->
     <menuitem id="menu_workflow_approvals"
               name="✓ Vue approbateur"
-              parent="menu_workflow_root"
+              parent="menu_credit_section"
               action="action_workflow_approval_view"
               sequence="15"/>
 
-    <!-- Menu: Configuration -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SECTION 2 — COURRIER ENTRANT
+         Apparaît en second dans la barre de navigation horizontale.
+         ═══════════════════════════════════════════════════════════════════ -->
+    <menuitem id="menu_courrier_section"
+              name="📬 Courrier"
+              parent="menu_workflow_root"
+              sequence="20"/>
+
+    <!-- Tableau de bord Courrier -->
+    <menuitem id="menu_courrier_dashboard"
+              name="Tableau de bord"
+              parent="menu_courrier_section"
+              action="action_workflow_dashboard_courrier"
+              sequence="1"/>
+
+    <!-- Tous les courriers -->
+    <menuitem id="menu_courrier_tous"
+              name="Tous les courriers"
+              parent="menu_courrier_section"
+              action="workflow.action_courrier_entrant"
+              sequence="10"/>
+
+    <!-- Vue approbateur Courrier -->
+    <menuitem id="menu_courrier_approbateur"
+              name="✓ Vue approbateur"
+              parent="menu_courrier_section"
+              action="action_workflow_approval_view"
+              sequence="20"/>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         SECTION 3 — CONFIGURATION (partagée)
+         ═══════════════════════════════════════════════════════════════════ -->
     <menuitem id="menu_workflow_config"
               name="Configuration"
               parent="menu_workflow_root"

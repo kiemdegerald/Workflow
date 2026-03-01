@@ -4,6 +4,38 @@
 
 Module Odoo Enterprise v17 générique de gestion de workflows de validation multi-niveaux, conçu pour les institutions bancaires et financières.
 
+## 🚀 Développement & Déploiement
+
+**Pour les développeurs utilisant Cursor AI / VS Code :**
+
+📁 **Dossier [deployment/](deployment/)** - Tous les outils de déploiement
+- 📖 [GUIDE_CURSOR.md](deployment/GUIDE_CURSOR.md) - Configuration Cursor AI (⭐ À lire en premier)
+- 📚 [DEPLOIEMENT.md](deployment/DEPLOIEMENT.md) - Documentation des scripts PowerShell
+- 🚀 Scripts : `deploy.ps1`, `deploy-file.ps1`, `restart.ps1`, `logs.ps1`
+
+📚 **Documentation technique complète :** [PROJET_WORKFLOW_DOCUMENTATION.md](exemple_page/PROJET_WORKFLOW_DOCUMENTATION.md)
+
+### Déploiement rapide
+
+```powershell
+# Déployer tout le module
+cd C:\Users\user\Desktop\addon_custom
+.\deployment\deploy.ps1
+
+# Déployer un fichier modifié
+.\deployment\deploy-file.ps1 -FilePath "models\workflow_request.py"
+.\deployment\restart.ps1
+
+# Voir les logs en temps réel
+.\deployment\logs.ps1
+```
+
+**Serveur Odoo** : ubuntu@130.61.235.163  
+**Base de données** : odoo_2026_01_27  
+**GitHub** : https://github.com/kiemdegerald/Workflow.git
+
+---
+
 ## 🏗️ Structure du Module
 
 ```

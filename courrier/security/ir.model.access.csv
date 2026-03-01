@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_courrier_entrant_user,access.courrier.entrant.user,model_workflow_courrier_entrant,base.group_user,1,1,1,0
+access_courrier_entrant_manager,access.courrier.entrant.manager,model_workflow_courrier_entrant,base.group_system,1,1,1,1

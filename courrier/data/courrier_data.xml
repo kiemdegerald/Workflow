@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- ============================================================
+             TYPE DE WORKFLOW : COURRIER ENTRANT
+             Séparé du type CREDIT — même moteur, interface distincte
+             ============================================================ -->
+        <record id="workflow_type_courrier" model="workflow.type">
+            <field name="name">Courrier Entrant</field>
+            <field name="code">COURRIER</field>
+            <field name="description">
+                Gestion et validation des courriers entrants (lettres, emails, rapports...).
+            </field>
+            <field name="active">True</field>
+        </record>
+
+        <!-- ============================================================
+             CIRCUIT PAR DÉFAUT : CIRCUIT COURRIER STANDARD
+             À configurer depuis Configuration > Circuits
+             ============================================================ -->
+        <record id="workflow_definition_courrier_standard" model="workflow.definition">
+            <field name="name">Circuit Courrier Standard</field>
+            <field name="code">COURRIER-STD</field>
+            <field name="workflow_type_id" ref="workflow_type_courrier"/>
+            <field name="description">
+                Circuit de validation standard pour les courriers entrants.
+                Configurer les niveaux depuis Workflow > Configuration > Circuits.
+            </field>
+            <field name="active">True</field>
+        </record>
+
+    </data>
+</odoo>

@@ -208,3 +208,25 @@ class WorkflowRequest(models.Model):
             'stats': stats,
             'recent_requests': recent_requests,
         }
+
+    def action_view_comments(self):
+        """Ouvre un popup avec tous les commentaires de la demande"""
+        self.ensure_one()
+        
+        # Compter les commentaires
+        comment_count = self.env['workflow.request.comment'].search_count([
+            ('request_id', '=', self.id)
+        ])
+        
+        return {
+            'name': f'Commentaires - {self.name} ({comment_count})',
+            'type': 'ir.actions.act_window',
+            'res_model': 'workflow.request.comment',
+            'view_mode': 'tree,form',
+            'domain': [('request_id', '=', self.id)],
+            'context': {
+                'default_request_id': self.id,
+                'search_default_request_id': self.id,
+            },
+            'target': 'new',
+        }

@@ -45,26 +45,39 @@
         'mail',
     ],
     'data': [
-        # Security
+        # ── Sécurité Crédit ───────────────────────────────────────────
         'security/workflow_security.xml',
         'security/ir.model.access.csv',
-        
-        # Data
+
+        # ── Sécurité Courrier ─────────────────────────────────────────
+        'courrier/security/ir.model.access.csv',
+
+        # ── Données Crédit ────────────────────────────────────────────
         'data/workflow_sequence.xml',
         'data/workflow_demo_data.xml',
         'data/workflow_approval_demo_data.xml',
         'data/workflow_users_demo.xml',
-        
-        # Views
+
+        # ── Données Courrier ──────────────────────────────────────────
+        'courrier/data/courrier_sequence.xml',
+        'courrier/data/courrier_data.xml',
+
+        # ── Vues Crédit ───────────────────────────────────────────────
         'views/workflow_type_views.xml',
         'views/workflow_request_views.xml',
+        'views/workflow_request_comment_views.xml',
         'views/workflow_dashboard.xml',
         'views/workflow_approval_view.xml',
         'views/workflow_circuit_views.xml',
         'views/workflow_routing_rule_views.xml',
+
+        # ── Vues Courrier (avant les menus) ───────────────────────────
+        'courrier/views/courrier_entrant_views.xml',
+
+        # ── Menus (après toutes les actions) ──────────────────────────
         'views/workflow_menus.xml',
-        
-        # Wizards
+
+        # ── Wizards ───────────────────────────────────────────────────
         'wizard/workflow_request_wizard_views.xml',
     ],
     'assets': {

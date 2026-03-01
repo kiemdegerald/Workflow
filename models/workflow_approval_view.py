@@ -15,128 +15,300 @@ class WorkflowApprovalView(models.TransientModel):
 
     @api.depends('request_id')
     def _compute_approval_html(self):
-        """Génère le HTML de la vue approbateur"""
+        """Génère le HTML de la vue approbateur — adapté selon le type (CREDIT ou COURRIER)"""
         for record in self:
             if not record.request_id:
                 record.approval_html = '<p>Aucune demande sélectionnée</p>'
                 continue
 
             req = record.request_id
-            
-            # Récupérer l'approbation courante pour l'utilisateur
+            workflow_type_code = req.workflow_type_id.code if req.workflow_type_id else ''
+
+            # Approbation courante
             current_approval = self.env['workflow.request.approval'].search([
                 ('workflow_request_id', '=', req.id),
                 ('approver_id', '=', self.env.user.id),
-                ('state', '=', 'pending')
+                ('state', '=', 'pending'),
             ], limit=1)
-            
-            # Récupérer toutes les approbations pour afficher l'historique
+
             all_approvals = self.env['workflow.request.approval'].search([
-                ('workflow_request_id', '=', req.id)
+                ('workflow_request_id', '=', req.id),
             ], order='workflow_level_id')
-            
-            # Construire la barre de statut
-            statusbar_html = self._build_statusbar(all_approvals, current_approval)
-            
-            # Historique des décisions
-            history_html = self._build_approval_history(all_approvals)
-            
-            # Commentaires des niveaux précédents
+
+            statusbar_html        = self._build_statusbar(all_approvals, current_approval)
+            history_html          = self._build_approval_history(all_approvals)
             previous_comments_html = self._build_previous_comments(all_approvals, current_approval)
-            
-            # Documents
-            documents_html = self._build_documents_section(req)
-            
-            # État de la demande
             status_text = "En attente de votre validation" if current_approval else "Déjà validée par vous"
-            
-            # Montant formaté
-            amount_formatted = f"{req.amount:,.0f}".replace(',', ' ') if req.amount else '0'
-            
-            # Type de crédit
-            credit_types = {
-                'salary': 'Crédit salarié',
-                'housing': 'Crédit habitat',
-                'consumption': 'Crédit consommation',
-                'business': 'Crédit entreprise',
-                'other': 'Autre',
-            }
-            credit_type_label = credit_types.get(req.credit_type, req.credit_type or '-')
-            
+
+            # ── Contenu du dossier selon le type ─────────────────────────
+            if workflow_type_code == 'COURRIER':
+                dossier_html = record._build_dossier_courrier(req)
+                documents_html = record._build_documents_courrier(req)
+                header_color = 'linear-gradient(135deg, #1a5276 0%, #2471a3 100%)'
+                dossier_title = '📬 Courrier à examiner'
+            else:
+                dossier_html = record._build_dossier_credit(req)
+                documents_html = self._build_documents_section(req)
+                header_color = 'linear-gradient(135deg, #0a4b78 0%, #0d5a8f 100%)'
+                dossier_title = '📋 Dossier crédit à examiner'
+
             html = f'''
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f8f9fa; padding: 2rem;">
-                
-                <!-- En-tête -->
+
                 <div style="margin-bottom: 2rem;">
                     <h1 style="margin: 0; font-size: 32px; font-weight: 700; color: #1a1a1a;">Vue Approbateur</h1>
                     <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 16px;">Validez, refusez ou retournez les demandes qui vous sont assignées</p>
                 </div>
 
-                <!-- Container principal -->
                 <div style="background: white; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); overflow: hidden;">
-                    
-                    <!-- Header de la demande -->
-                    <div style="background: linear-gradient(135deg, #0a4b78 0%, #0d5a8f 100%); padding: 1.5rem 2rem; color: white;">
+
+                    <div style="background: {header_color}; padding: 1.5rem 2rem; color: white;">
                         <div style="font-size: 22px; font-weight: 600; margin-bottom: 0.5rem;">{req.subject or 'Sans objet'}</div>
                         <div style="font-size: 14px; opacity: 0.9;">{req.name} • {status_text}</div>
                     </div>
-                    
-                    <!-- Barre de statut -->
+
                     <div style="padding: 2rem; border-bottom: 1px solid #e9ecef;">
                         {statusbar_html}
                     </div>
-                    
-                    <!-- Corps -->
+
                     <div style="padding: 2rem;">
-                        
-                        <!-- Section: Dossier complet -->
+
                         <div style="background: rgba(10, 75, 120, 0.04); border: 2px solid #0a4b78; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
-                            <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; color: #0a4b78; font-weight: 600;">📋 Dossier complet à examiner</h3>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Client</div>
-                                    <div style="font-weight: 600; font-size: 15px;">{req.client_name or 'Non renseigné'}</div>
-                                    {('<div style="font-size: 13px; color: #6c757d; margin-top: 0.25rem;">' + req.client_number + '</div>') if req.client_number else ''}
-                                </div>
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Numéro de compte</div>
-                                    <div style="font-weight: 600; font-size: 15px;">{req.account_number or 'Non renseigné'}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Type de crédit</div>
-                                    <div style="font-weight: 600; font-size: 15px;">{credit_type_label}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Référence demande</div>
-                                    <div style="font-weight: 600; font-size: 15px;">{req.name}</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Montant demandé</div>
-                                    <div style="font-size: 20px; font-weight: 700; color: #0a4b78;">{amount_formatted} FCFA</div>
-                                </div>
-                                <div>
-                                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Durée</div>
-                                    <div style="font-weight: 600; font-size: 15px;">{req.duration_months or 0} mois</div>
-                                </div>
-                            </div>
-
-                            {('<div style="background: white; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;"><strong style="display: block; margin-bottom: 0.5rem;">Objet du crédit :</strong><p style="margin: 0; color: #495057;">' + (req.description or 'Aucune description') + '</p></div>') if req.description else ''}
-
+                            <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; color: #0a4b78; font-weight: 600;">{dossier_title}</h3>
+                            {dossier_html}
                             {history_html}
                         </div>
 
-                        <!-- Commentaires des niveaux précédents -->
                         {previous_comments_html}
-
-                        <!-- Documents -->
                         {documents_html}
                     </div>
                 </div>
             </div>
             '''
-            
+
             record.approval_html = html
+
+    def _build_dossier_credit(self, req):
+        """HTML du dossier pour un crédit bancaire."""
+        credit_types = {
+            'salary': 'Crédit salarié',
+            'housing': 'Crédit habitat',
+            'consumption': 'Crédit consommation',
+            'business': 'Crédit entreprise',
+            'other': 'Autre',
+        }
+        credit_type_label = credit_types.get(req.credit_type, req.credit_type or '-')
+        amount_formatted = f"{req.amount:,.0f}".replace(',', ' ') if req.amount else '0'
+
+        description_block = ''
+        if req.description:
+            description_block = f'''
+                <div style="background: white; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <strong style="display: block; margin-bottom: 0.5rem;">Objet du crédit :</strong>
+                    <p style="margin: 0; color: #495057;">{req.description}</p>
+                </div>'''
+
+        return f'''
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Client</div>
+                    <div style="font-weight: 600; font-size: 15px;">{req.client_name or 'Non renseigné'}</div>
+                    {('<div style="font-size: 13px; color: #6c757d; margin-top: 0.25rem;">' + req.client_number + '</div>') if req.client_number else ''}
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Numéro de compte</div>
+                    <div style="font-weight: 600; font-size: 15px;">{req.account_number or 'Non renseigné'}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Type de crédit</div>
+                    <div style="font-weight: 600; font-size: 15px;">{credit_type_label}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Référence</div>
+                    <div style="font-weight: 600; font-size: 15px;">{req.name}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Montant demandé</div>
+                    <div style="font-size: 20px; font-weight: 700; color: #0a4b78;">{amount_formatted} FCFA</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Durée</div>
+                    <div style="font-weight: 600; font-size: 15px;">{req.duration_months or 0} mois</div>
+                </div>
+            </div>
+            {description_block}'''
+
+    def _build_dossier_courrier(self, req):
+        """HTML du dossier pour un courrier entrant."""
+        courrier = self.env['workflow.courrier.entrant'].search([
+            ('workflow_request_id', '=', req.id)
+        ], limit=1)
+
+        if not courrier:
+            return f'''
+                <div style="background: #fff3cd; border-radius: 8px; padding: 1rem; color: #856404;">
+                    ⚠️ Courrier lié introuvable (référence : {req.name}).
+                </div>'''
+
+        type_labels = {
+            'lettre':       'Lettre',
+            'email':        'Email',
+            'rapport':      'Rapport',
+            'facture':      'Facture',
+            'demande':      'Demande',
+            'notification': 'Notification',
+            'autre':        'Autre',
+        }
+        type_label = type_labels.get(courrier.type_courrier, courrier.type_courrier or '-')
+
+        priorite_labels = {'0': 'Normal', '1': 'Urgent', '2': 'Critique'}
+        priorite_colors  = {'0': '#6c757d', '1': '#fd7e14', '2': '#dc3545'}
+        priorite_label = priorite_labels.get(courrier.priorite, '-')
+        priorite_color = priorite_colors.get(courrier.priorite, '#6c757d')
+
+        date_str = courrier.date_reception.strftime('%d/%m/%Y') if courrier.date_reception else '-'
+
+        description_block = ''
+        if courrier.description:
+            description_block = f'''
+                <div style="background: white; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <strong style="display: block; margin-bottom: 0.5rem;">Résumé du courrier :</strong>
+                    <p style="margin: 0; color: #495057;">{courrier.description}</p>
+                </div>'''
+
+        instruction_block = ''
+        if courrier.instruction:
+            instruction_block = f'''
+                <div style="background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 8px; padding: 1rem;">
+                    <strong style="display: block; margin-bottom: 0.5rem;">📌 Instructions de traitement :</strong>
+                    <p style="margin: 0; color: #495057;">{courrier.instruction}</p>
+                </div>'''
+
+        return f'''
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem;">
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Référence courrier</div>
+                    <div style="font-weight: 600; font-size: 15px;">{courrier.name}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Date de réception</div>
+                    <div style="font-weight: 600; font-size: 15px;">{date_str}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Expéditeur</div>
+                    <div style="font-weight: 600; font-size: 15px;">{courrier.expediteur or 'Non renseigné'}</div>
+                    {('<div style="font-size: 13px; color: #6c757d; margin-top: 0.25rem;">' + courrier.origine + '</div>') if courrier.origine else ''}
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Type de courrier</div>
+                    <div style="font-weight: 600; font-size: 15px;">{type_label}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Priorité</div>
+                    <div style="font-weight: 700; font-size: 15px; color: {priorite_color};">{priorite_label}</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #6c757d; margin-bottom: 0.25rem; text-transform: uppercase; font-weight: 600;">Enregistré par</div>
+                    <div style="font-weight: 600; font-size: 15px;">{courrier.secretaire_id.name if courrier.secretaire_id else '-'}</div>
+                </div>
+            </div>
+            {description_block}
+            {instruction_block}'''
+
+    def _build_documents_courrier(self, req):
+        """Documents attachés au courrier entrant avec token d'accès et prévisualisation."""
+        # Tout se fait en sudo pour éviter les erreurs d'accès
+        courrier = self.env['workflow.courrier.entrant'].sudo().search([
+            ('workflow_request_id', '=', req.id)
+        ], limit=1)
+
+        if not courrier:
+            return ''
+
+        # Récupérer les IDs des pièces jointes puis les charger en sudo
+        att_ids = courrier.attachment_ids.ids
+        if not att_ids:
+            return f'''
+                <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #dee2e6;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 18px; font-weight: 600;">📎 Documents du courrier</h3>
+                    <div style="text-align: center; padding: 2rem; color: #6c757d; background: #f8f9fa; border-radius: 8px;">
+                        <span style="font-size: 48px; display: block; margin-bottom: 0.5rem;">📎</span>
+                        <p style="margin: 0;">Aucun document joint à ce courrier</p>
+                    </div>
+                </div>'''
+
+        attachments = self.env['ir.attachment'].sudo().browse(att_ids)
+
+        docs_html = []
+        preview_html = ''
+
+        for idx, att in enumerate(attachments):
+            token    = att.access_token or ''
+            size_kb  = att.file_size / 1024 if att.file_size else 0
+            size_str = f"{size_kb/1024:.1f} MB" if size_kb > 1024 else f"{size_kb:.0f} KB"
+            mimetype = att.mimetype or ''
+            name     = att.name or 'Document'
+
+            # URL simple — le res_model/res_id est désormais défini sur l'attachment
+            # donc tout utilisateur pouvant lire le courrier peut lire le fichier
+            url_view     = f"/web/content/{att.id}/{name}"
+            url_download = f"/web/content/{att.id}/{name}?download=true"
+
+            is_pdf   = 'pdf' in mimetype
+            is_image = mimetype.startswith('image/')
+            icon     = '🖼️' if is_image else ('📄' if is_pdf else '📎')
+
+            # Prévisualisation inline pour le 1er document
+            if idx == 0:
+                if is_pdf:
+                    preview_html = f'''
+                        <div style="margin-bottom: 1.5rem; border: 2px solid #1a5276; border-radius: 10px; overflow: hidden;">
+                            <div style="background: #1a5276; color: white; padding: 0.75rem 1rem; font-weight: 600; font-size: 14px;">
+                                👁️ Aperçu — {name}
+                            </div>
+                            <iframe src="{url_view}"
+                                    style="width: 100%; height: 700px; border: none; display: block;"
+                                    title="{name}">
+                            </iframe>
+                        </div>'''
+                elif is_image:
+                    preview_html = f'''
+                        <div style="margin-bottom: 1.5rem; border: 2px solid #1a5276; border-radius: 10px; overflow: hidden;">
+                            <div style="background: #1a5276; color: white; padding: 0.75rem 1rem; font-weight: 600; font-size: 14px;">
+                                👁️ Aperçu — {name}
+                            </div>
+                            <div style="text-align: center; padding: 1rem; background: #f8f9fa;">
+                                <img src="{url_view}"
+                                     style="max-width: 100%; max-height: 700px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                                     alt="{name}"/>
+                            </div>
+                        </div>'''
+
+            docs_html.append(f'''
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                    <span style="font-size: 24px;">{icon}</span>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600;">{name}</div>
+                        <div style="font-size: 12px; color: #6c757d;">{mimetype or 'Document'} • {size_str}</div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="{url_view}" target="_blank"
+                           style="background: #1a5276; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                           👁 Visualiser
+                        </a>
+                        <a href="{url_download}" target="_blank"
+                           style="background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                           ⬇ Télécharger
+                        </a>
+                    </div>
+                </div>''')
+
+        return f'''
+            <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #dee2e6;">
+                <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; font-weight: 600;">📎 Document(s) du courrier à examiner</h3>
+                {preview_html}
+                {''.join(docs_html)}
+            </div>'''
 
     def _build_statusbar(self, all_approvals, current_approval):
         """Construit la barre de statut avec les niveaux de validation"""
@@ -533,8 +705,33 @@ class WorkflowApprovalView(models.TransientModel):
             'author_level_sequence': self.current_approval_id.workflow_level_id.sequence,
         })
         
-        # Chercher s'il y a un niveau suivant dans le circuit
+        # IMPORTANT: Vérifier si toutes les approbations du niveau actuel sont validées
         current_level = self.current_approval_id.workflow_level_id
+        pending_at_current_level = self.env['workflow.request.approval'].search([
+            ('workflow_request_id', '=', self.request_id.id),
+            ('workflow_level_id', '=', current_level.id),
+            ('state', '=', 'pending')
+        ])
+        
+        if pending_at_current_level:
+            # Il reste des validateurs à ce niveau qui n'ont pas encore approuvé
+            # On garde la demande en "in_progress" et on attend les autres
+            self.request_id.write({'state': 'in_progress'})
+            
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': 'Demande approuvée',
+                    'message': f'Votre validation a été enregistrée. En attente des autres validateurs du niveau {current_level.name}.',
+                    'type': 'success',
+                    'sticky': False,
+                    'next': {'type': 'ir.actions.act_window_close'},
+                }
+            }
+        
+        # Toutes les approbations du niveau actuel sont validées
+        # Chercher s'il y a un niveau suivant dans le circuit
         next_level = self.env['workflow.level'].search([
             ('workflow_definition_id', '=', current_level.workflow_definition_id.id),
             ('sequence', '>', current_level.sequence)

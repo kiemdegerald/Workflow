@@ -1,0 +1,20 @@
+# Configuration SSH pour Remote-SSH (VS Code / Cursor AI)
+# Emplacement : C:\Users\user\.ssh\config (Windows)
+# Emplacement : ~/.ssh/config (Linux/Mac)
+
+Host odoo-server
+    HostName 130.61.235.163
+    User ubuntu
+    IdentityFile C:\Users\user\Desktop\wfssh\ssh-key-serveur-odoo-dev - Copie.key
+    StrictHostKeyChecking no
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+# Usage dans Cursor AI / VS Code :
+# 1. Installer l'extension "Remote-SSH"
+# 2. Ctrl+Shift+P → "Remote-SSH: Connect to Host"
+# 3. Sélectionner "odoo-server"
+# 4. Ouvrir le dossier : /opt/odoo/custom_addons/workflow
+
+# Note : Sur Windows, utilisez des chemins Windows pour IdentityFile
+# Note : Sur Linux/Mac, utilisez des chemins Unix pour IdentityFile (ex: ~/.ssh/id_rsa)
