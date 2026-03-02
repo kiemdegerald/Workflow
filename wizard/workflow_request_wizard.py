@@ -355,12 +355,23 @@ class WorkflowRequestWizard(models.TransientModel):
             message_type='notification'
         )
         
-        # Ouvre directement le formulaire de la demande soumise
+        # Notification + redirection vers la demande créée
         return {
-            'type': 'ir.actions.act_window',
-            'name': f'Demande {request.name}',
-            'res_model': 'workflow.request',
-            'view_mode': 'form',
-            'res_id': request.id,
-            'target': 'current',
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': '✅ Demande soumise avec succès',
+                'message': f'La demande {request.name} a été soumise et transmise au circuit de validation.',
+                'type': 'success',
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'name': f'Demande {request.name}',
+                    'res_model': 'workflow.request',
+                    'view_mode': 'form',
+                    'views': [[False, 'form']],
+                    'res_id': request.id,
+                    'target': 'current',
+                },
+            },
         }

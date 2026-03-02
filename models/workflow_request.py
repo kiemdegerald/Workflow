@@ -118,6 +118,35 @@ class WorkflowRequest(models.Model):
         if vals.get('name', 'Nouveau') == 'Nouveau':
             vals['name'] = self.env['ir.sequence'].next_by_code('workflow.request') or 'REQ/NEW'
         return super(WorkflowRequest, self).create(vals)
+
+    def write(self, vals):
+        result = super().write(vals)
+        if 'state' in vals:
+            self._sync_linked_objects(vals['state'])
+        return result
+
+    def _sync_linked_objects(self, new_state):
+        """Synchronise les objets liés (courrier entrant…) quand l'état de la demande change."""
+        if 'workflow.courrier.entrant' not in self.env:
+            return
+        for request in self:
+            courrier = self.env['workflow.courrier.entrant'].sudo().search(
+                [('workflow_request_id', '=', request.id)], limit=1
+            )
+            if not courrier:
+                continue
+            if new_state == 'approved':
+                courrier.sudo().write({'state': 'traite'})
+                courrier.sudo().message_post(
+                    body="✅ Courrier validé — circuit de validation complété avec succès.",
+                    subtype_xmlid='mail.mt_note',
+                )
+            elif new_state == 'rejected':
+                courrier.sudo().write({'state': 'recu'})
+                courrier.sudo().message_post(
+                    body="❌ Courrier refusé — remis à l'état « Reçu ».",
+                    subtype_xmlid='mail.mt_note',
+                )
     
     @api.model
     def get_dashboard_data(self):

@@ -60,7 +60,7 @@ class WorkflowDashboard(models.TransientModel):
             total = Model.search_count([])
         else:
             Request = self.env['workflow.request']
-            total = Request.search_count([('workflow_type_id.code', '=', 'CREDIT')])
+            total = Request.search_count([('workflow_type_id.category', '=', 'credit')])
 
         total_pages = max(1, (total + 9) // 10)
         if self.page >= total_pages:
@@ -81,7 +81,7 @@ class WorkflowDashboard(models.TransientModel):
             # ── TABLEAU DE BORD CRÉDIT ─────────────────────────────────────
             if mode == 'credit':
                 Request = self.env['workflow.request']
-                base_domain = [('workflow_type_id.code', '=', 'CREDIT')]
+                base_domain = [('workflow_type_id.category', '=', 'credit')]
 
                 total_requests = Request.search_count(base_domain)
                 in_progress_requests = Request.search_count(base_domain + [('state', 'in', ['submitted', 'in_progress'])])

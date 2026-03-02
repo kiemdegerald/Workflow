@@ -104,7 +104,7 @@ class WorkflowCourrierEntrant(models.Model):
         'workflow.definition',
         string='Circuit de validation',
         tracking=True,
-        domain="[('workflow_type_id.code', '=', 'COURRIER')]",
+        domain="[('workflow_type_id.category', '=', 'courrier')]",
     )
     workflow_request_id = fields.Many2one(
         'workflow.request',
@@ -193,9 +193,9 @@ class WorkflowCourrierEntrant(models.Model):
             raise UserError("Le circuit sélectionné n'a aucun niveau configuré.")
 
         # Récupérer le type workflow COURRIER
-        courrier_type = self.env['workflow.type'].search([('code', '=', 'COURRIER')], limit=1)
+        courrier_type = self.env['workflow.type'].search([('category', '=', 'courrier')], limit=1)
         if not courrier_type:
-            raise UserError("Le type de workflow 'COURRIER' est introuvable. Vérifiez la configuration.")
+            raise UserError("Aucun type de workflow de catégorie 'Courrier Entrant' trouvé. Vérifiez la configuration.")
 
         # Créer la demande workflow interne (moteur partagé)
         request = self.env['workflow.request'].create({

@@ -9,6 +9,7 @@
         <record id="workflow_type_courrier" model="workflow.type">
             <field name="name">Courrier Entrant</field>
             <field name="code">COURRIER</field>
+            <field name="category">courrier</field>
             <field name="description">
                 Gestion et validation des courriers entrants (lettres, emails, rapports...).
             </field>

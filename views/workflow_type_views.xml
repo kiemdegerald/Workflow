@@ -9,6 +9,7 @@
             <field name="arch" type="xml">
                 <tree string="Types de Workflow">
                     <field name="name"/>
+                    <field name="category"/>
                     <field name="code"/>
                     <field name="description"/>
                     <field name="active"/>
@@ -28,13 +29,22 @@
                         </div>
                         <group>
                             <group>
-                                <field name="name" placeholder="Ex: Crédit Bancaire"/>
-                                <field name="code" placeholder="Ex: CREDIT"/>
+                                <field name="name" placeholder="Ex: Crédit Bancaire, Congé, Achat..."/>
+                                <field name="category"/>
+                                <field name="code" readonly="1"/>
                             </group>
                             <group>
                                 <field name="active"/>
                             </group>
                         </group>
+                        <div class="alert alert-info" style="margin: 0 16px 16px 16px; padding: 10px 14px; border-radius: 8px; font-size: 13px;">
+                            <strong>ℹ️ Catégorie :</strong> Détermine dans quel tableau de bord ce type apparaît.
+                            Choisissez <b>💳 Crédit Bancaire</b> pour le tableau de bord Crédit,
+                            <b>📬 Courrier Entrant</b> pour le tableau de bord Courrier,
+                            ou <b>📋 Autre</b> pour un type indépendant.
+                            <br/>
+                            <strong>Code technique :</strong> généré automatiquement depuis le nom (référence interne, non modifiable).
+                        </div>
                         <group>
                             <field name="description" placeholder="Description du type de workflow..."/>
                         </group>

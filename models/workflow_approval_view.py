@@ -126,7 +126,7 @@ class WorkflowApprovalView(models.TransientModel):
                 continue
 
             req = record.request_id
-            workflow_type_code = req.workflow_type_id.code if req.workflow_type_id else ''
+            workflow_type_category = req.workflow_type_id.category if req.workflow_type_id else ''
 
             # Approbation courante : priorité à current_approval_id si présent (vue approbateur)
             if record.current_approval_id:
@@ -168,7 +168,7 @@ class WorkflowApprovalView(models.TransientModel):
                     </div>'''
 
             # ── Contenu du dossier selon le type ─────────────────────────
-            if workflow_type_code == 'COURRIER':
+            if workflow_type_category == 'courrier':
                 dossier_html = record._build_dossier_courrier(req)
                 documents_html = record._build_documents_courrier(req)
                 header_color = 'linear-gradient(135deg, #1a5276 0%, #2471a3 100%)'

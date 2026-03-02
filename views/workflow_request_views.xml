@@ -323,7 +323,7 @@
         <field name="res_model">workflow.request</field>
         <field name="view_mode">tree,form</field>
         <field name="limit">10</field>
-        <field name="domain">[('workflow_type_id.code', '=', 'CREDIT')]</field>
+        <field name="domain">[('workflow_type_id.category', '=', 'credit')]</field>
         <field name="context">{}</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">

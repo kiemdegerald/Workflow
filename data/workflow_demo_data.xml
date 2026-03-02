@@ -10,6 +10,7 @@
     <record id="workflow_type_credit" model="workflow.type">
         <field name="name">Crédit Bancaire</field>
         <field name="code">CREDIT</field>
+        <field name="category">credit</field>
         <field name="description">Processus de validation des demandes de crédit bancaire</field>
         <field name="active">1</field>
     </record>
