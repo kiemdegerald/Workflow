@@ -1,7 +1,105 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    
-    <!-- Vue Tree: Liste des Circuits -->
+
+    <!-- ===================================================================
+         FORMULAIRE STANDALONE D'UNE ÉTAPE (workflow.level)
+         Ouvert en POPUP via le bouton "⚙️ Configurer" depuis le circuit.
+         Sauvegarde directement en base de données → pas de perte de données.
+         ================================================================ -->
+
+    <record id="view_workflow_level_form" model="ir.ui.view">
+        <field name="name">workflow.level.form</field>
+        <field name="model">workflow.level</field>
+        <field name="arch" type="xml">
+            <form string="Configurer l'étape">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name" string="Nom de l'étape"/>
+                        <h1>
+                            <field name="name"
+                                   placeholder="Ex: Validation Chef d'agence, Contrôle Risque..."/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Paramètres">
+                            <field name="sequence"/>
+                            <field name="workflow_definition_id" readonly="1"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </group>
+                        <group string="Validation">
+                            <field name="require_all_approvers" widget="boolean_toggle"/>
+                        </group>
+                    </group>
+
+                    <field name="description"
+                           placeholder="Décrivez le rôle de cette étape (optionnel)..."
+                           widget="text"/>
+
+                    <notebook>
+
+                        <!-- ── Onglet 1 : Approbateurs ───────────────────── -->
+                        <page string="👥 Approbateurs" name="approvers">
+                            <div style="margin-bottom: 12px; padding: 10px 14px; background: #e7f0ff; border-radius: 8px; font-size: 13px; color: #0a4b78;">
+                                <strong>💡 Qui peut valider à cette étape ?</strong><br/>
+                                Ajoutez les utilisateurs autorisés.
+                                Si <em>Tous les approbateurs requis</em> est coché,
+                                chacun devra valider avant de passer à l'étape suivante.
+                            </div>
+                            <field name="approver_ids"
+                                   widget="many2many_tags"
+                                   nolabel="1"
+                                   placeholder="Rechercher un utilisateur..."/>
+                        </page>
+
+                        <!-- ── Onglet 2 : Actions ────────────────────────── -->
+                        <page string="⚡ Actions disponibles" name="actions">
+                            <div style="margin-bottom: 12px; padding: 10px 14px; background: #fff3cd; border-radius: 8px; font-size: 13px; color: #856404;">
+                                <strong>💡 Que peuvent faire les approbateurs ?</strong><br/>
+                                Chaque ligne = un bouton affiché dans la vue approbateur.<br/>
+                                Le <em>type d'action</em> détermine le comportement du moteur.
+                            </div>
+                            <field name="action_ids" nolabel="1">
+                                <tree string="Actions" editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"
+                                           string="Libellé du bouton"
+                                           placeholder="Ex: Approuver, Valider, Refuser..."/>
+                                    <field name="action_type" string="Type d'action"/>
+                                    <field name="color" string="Couleur"/>
+                                    <field name="requires_comment"
+                                           string="Commentaire requis"
+                                           widget="boolean_toggle"/>
+                                    <field name="target_level_id"
+                                           string="Étape cible (optionnel)"
+                                           optional="show"/>
+                                    <field name="workflow_definition_id" column_invisible="1"/>
+                                </tree>
+                            </field>
+
+                            <div style="margin-top: 14px; padding: 10px 14px; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; font-size: 12px; color: #6c757d;">
+                                <strong>Actions standards recommandées :</strong>
+                                <ul style="margin: 6px 0 0 0; padding-left: 18px;">
+                                    <li><strong>Approuver</strong> → type <em>Approuver (niveau suivant)</em>, Vert</li>
+                                    <li><strong>Refuser</strong> → type <em>Refuser définitivement</em>, Rouge</li>
+                                    <li><strong>Retourner</strong> → type <em>Retourner au niveau précédent</em>, Orange</li>
+                                    <li><strong>Demander infos</strong> → type <em>Demander des informations</em>, Cyan</li>
+                                    <li><strong>Valider (dernier niveau)</strong> → type <em>Valider (fin de circuit)</em>, Vert</li>
+                                </ul>
+                            </div>
+                        </page>
+
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+    <!-- ===================================================================
+         VUE LISTE DES CIRCUITS (tree)
+         ================================================================ -->
+
     <record id="view_workflow_definition_tree" model="ir.ui.view">
         <field name="name">workflow.definition.tree</field>
         <field name="model">workflow.definition</field>
@@ -16,7 +114,14 @@
         </field>
     </record>
 
-    <!-- Vue Form: Détails d'un Circuit -->
+
+    <!-- ===================================================================
+         FORMULAIRE D'UN CIRCUIT (workflow.definition)
+         Les étapes sont éditables inline (nom/séquence).
+         Pour configurer approbateurs & actions → bouton "⚙️ Configurer"
+         qui ouvre un POPUP sauvegardant directement en base de données.
+         ================================================================ -->
+
     <record id="view_workflow_definition_form" model="ir.ui.view">
         <field name="name">workflow.definition.form</field>
         <field name="model">workflow.definition</field>
@@ -24,59 +129,102 @@
             <form string="Circuit de Validation">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
-                        <widget name="web_ribbon" title="Archivé" bg_color="text-bg-danger" invisible="active"/>
+                        <widget name="web_ribbon"
+                                title="Archivé"
+                                bg_color="text-bg-danger"
+                                invisible="active"/>
                     </div>
-                    
+
                     <div class="oe_title">
                         <label for="name" string="Nom du Circuit"/>
                         <h1>
-                            <field name="name" placeholder="ex: Circuit A — Standard"/>
+                            <field name="name" placeholder="Ex: Circuit A — Standard"/>
                         </h1>
                     </div>
 
                     <group>
                         <group>
-                            <field name="code" placeholder="ex: CIRCUIT_A"/>
-                            <field name="workflow_type_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="code" placeholder="Ex: CIRCUIT_A"/>
+                            <field name="workflow_type_id"
+                                   options="{'no_create': True, 'no_open': True}"/>
                         </group>
                         <group>
                             <field name="active" widget="boolean_toggle"/>
                         </group>
                     </group>
 
-                    <!-- Champ description pleine largeur -->
-                    <div class="o_group" style="width: 100% !important; max-width: none !important;">
-                        <div style="background: #f8f9fa; border: 2px solid #0a4b78; border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0;">
-                            <label for="description" style="display: block; margin-bottom: 0.75rem; font-weight: 700; font-size: 16px; color: #0a4b78;">
-                                Description du circuit et conditions d'application
+                    <div class="o_group"
+                         style="width: 100% !important; max-width: none !important;">
+                        <div style="background: #f8f9fa; border: 2px solid #0a4b78; border-radius: 8px; padding: 1.5rem; margin: 1rem 0;">
+                            <label for="description"
+                                   style="display: block; margin-bottom: 0.75rem; font-weight: 700; font-size: 16px; color: #0a4b78;">
+                                Description et conditions d'application
                             </label>
-                            <field name="description" 
-                                   placeholder="Ex: Circuit pour les crédits de moins de 5M FCFA. Nécessite 2 niveaux de validation : Chef d'agence puis Directeur des Engagements..." 
-                                   nolabel="1" 
-                                   widget="text" 
-                                   style="width: 100% !important; min-width: 100% !important; max-width: none !important; min-height: 120px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical; background-color: white; box-sizing: border-box;"/>
+                            <field name="description"
+                                   placeholder="Ex: Circuit pour les crédits de moins de 5M FCFA. Nécessite 2 niveaux : Chef d'agence puis Directeur..."
+                                   nolabel="1"
+                                   widget="text"
+                                   style="width: 100% !important; min-height: 80px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical; background-color: white; box-sizing: border-box;"/>
                         </div>
                     </div>
 
                     <notebook>
-                        <page string="Niveaux de Validation" name="levels">
-                            <field name="level_ids" nolabel="1">
-                                <tree string="Niveaux" editable="bottom" default_order="sequence">
+
+                        <!-- ── Onglet : Étapes du circuit ─────────────────── -->
+                        <page string="⚙️ Étapes du circuit" name="levels">
+
+                            <!-- Instruction claire -->
+                            <div style="margin-bottom: 14px; padding: 12px 16px; background: #e7f0ff; border-left: 4px solid #0a4b78; border-radius: 6px; font-size: 13px; color: #0a4b78;">
+                                <strong>Comment configurer les étapes :</strong><br/>
+                                1. Cliquez <strong>Ajouter une ligne</strong> → saisissez le nom de l'étape → <strong>sauvegardez le circuit</strong> (icône 💾 en haut).<br/>
+                                2. Cliquez ensuite sur <strong>⚙️ Configurer</strong> pour ajouter les approbateurs et les actions de chaque étape.<br/>
+                                3. Réordonnez les étapes avec la poignée <strong>⠿</strong> à gauche.
+                            </div>
+
+                            <field name="level_ids"
+                                   nolabel="1"
+                                   context="{'default_workflow_definition_id': active_id}">
+                                <tree string="Étapes" default_order="sequence" editable="bottom">
                                     <field name="sequence" widget="handle"/>
-                                    <field name="name" string="Rôle / Niveau"/>
-                                    <field name="approver_ids" widget="many2many_tags" string="Approbateurs"/>
-                                    <field name="description" string="Actions autorisées"/>
+                                    <field name="name"
+                                           string="Nom de l'étape"
+                                           placeholder="Ex: Validation Chef d'agence"/>
+                                    <field name="approver_count"
+                                           string="Approbateurs"
+                                           readonly="1"/>
+                                    <field name="action_count"
+                                           string="Actions"
+                                           readonly="1"/>
+                                    <field name="require_all_approvers"
+                                           string="Tous requis"
+                                           widget="boolean_toggle"/>
                                     <field name="active" widget="boolean_toggle"/>
+                                    <button name="action_open_form"
+                                            type="object"
+                                            string="⚙️ Configurer"
+                                            class="btn-primary btn-sm"
+                                            title="Configurer les approbateurs et les actions de cette étape"
+                                            invisible="not id"/>
                                 </tree>
                             </field>
+
+                            <div style="margin-top: 10px; padding: 8px 12px; background: #fff3cd; border-radius: 6px; font-size: 12px; color: #856404;">
+                                ⚠️ Le bouton <strong>⚙️ Configurer</strong> apparaît uniquement après la sauvegarde du circuit.
+                                Si vous venez d'ajouter une étape, sauvegardez d'abord (💾), puis cliquez sur Configurer.
+                            </div>
                         </page>
+
                     </notebook>
                 </sheet>
             </form>
         </field>
     </record>
 
-    <!-- Action: Circuits -->
+
+    <!-- ===================================================================
+         ACTION pour ouvrir la liste des circuits
+         ================================================================ -->
+
     <record id="action_workflow_circuits" model="ir.actions.act_window">
         <field name="name">Circuits</field>
         <field name="res_model">workflow.definition</field>
@@ -87,8 +235,8 @@
                 Créer un nouveau circuit de validation
             </p>
             <p>
-                Les circuits définissent les niveaux de validation hiérarchique.<br/>
-                Chaque circuit contient une séquence de niveaux d'approbation.
+                Les circuits définissent les étapes de validation hiérarchique.<br/>
+                Chaque étape contient des approbateurs et des actions configurables.
             </p>
         </field>
     </record>

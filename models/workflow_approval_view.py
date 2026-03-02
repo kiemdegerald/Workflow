@@ -13,7 +13,111 @@ class WorkflowApprovalView(models.TransientModel):
     comment = fields.Text(string='Commentaire', required=True)
     current_approval_id = fields.Many2one('workflow.request.approval', string='Approbation courante')
 
-    @api.depends('request_id')
+    # ── Champs pour les actions dynamiques ────────────────────────────────
+    current_level_id = fields.Many2one(
+        'workflow.level',
+        related='current_approval_id.workflow_level_id',
+        string='Niveau actuel',
+        store=True,
+    )
+    # Stocké en base : mis à True lors de la création si des actions existent sur l'étape.
+    has_configured_actions = fields.Boolean(
+        string='Actions configurées',
+        default=False,
+    )
+    selected_action_id = fields.Many2one(
+        'workflow.level.action',
+        string='Action à effectuer',
+        domain="[('level_id', '=', current_level_id)]",
+    )
+    # Couleur du bouton Exécuter — mise à jour via onchange
+    selected_action_color = fields.Char(
+        string='Couleur action',
+        default='primary',
+    )
+
+    @api.onchange('selected_action_id')
+    def _onchange_selected_action_id(self):
+        if self.selected_action_id:
+            self.selected_action_color = self.selected_action_id.color or 'primary'
+        else:
+            self.selected_action_color = 'primary'
+
+    def _redirect_to_request(self, title='✅ Action effectuée', message='La demande a été traitée avec succès.', notif_type='success'):
+        """Affiche une notification pendant quelques secondes, puis redirige vers la demande."""
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': title,
+                'message': message,
+                'type': notif_type,
+                'sticky': False,
+                'next': {
+                    'type': 'ir.actions.act_window',
+                    'name': 'Demande de Workflow',
+                    'res_model': 'workflow.request',
+                    'view_mode': 'form',
+                    'views': [[False, 'form']],
+                    'res_id': self.request_id.id,
+                    'target': 'current',
+                },
+            },
+        }
+
+    def action_execute(self):
+        """Exécute l'action choisie par l'approbateur parmi celles configurées."""
+        self.ensure_one()
+        if not self.selected_action_id:
+            raise UserError("Veuillez sélectionner une action avant de continuer.")
+
+        if self.selected_action_id.requires_comment:
+            if not self.comment or not self.comment.strip():
+                raise UserError(
+                    f"Un commentaire est obligatoire pour l'action « {self.selected_action_id.name} »."
+                )
+
+        action_type = self.selected_action_id.action_type
+
+        if action_type in ('go_next', 'complete'):
+            return self.action_approve()
+        elif action_type == 'reject':
+            return self.action_reject()
+        elif action_type == 'go_back':
+            return self.action_return()
+        elif action_type == 'request_info':
+            return self._action_request_info()
+        else:
+            raise UserError(f"Type d'action non reconnu : {action_type}")
+
+    def _action_request_info(self):
+        """Demander des informations complémentaires — garde le niveau actuel actif."""
+        self.ensure_one()
+        if not self.current_approval_id:
+            raise UserError("Aucune approbation en attente trouvée.")
+
+        self.env['workflow.request.comment'].create({
+            'name': f"Demande d'info - {self.current_approval_id.workflow_level_id.name}",
+            'request_id': self.request_id.id,
+            'approval_id': self.current_approval_id.id,
+            'user_id': self.env.user.id,
+            'comment_type': 'clarification',
+            'message': self.comment or '(Aucun commentaire)',
+            'author_level_sequence': self.current_approval_id.workflow_level_id.sequence,
+        })
+
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Demande envoyée',
+                'message': "Le demandeur a été notifié de votre demande d'informations.",
+                'type': 'info',
+                'sticky': False,
+            }
+        }
+
+    @api.depends('request_id', 'current_approval_id')
     def _compute_approval_html(self):
         """Génère le HTML de la vue approbateur — adapté selon le type (CREDIT ou COURRIER)"""
         for record in self:
@@ -24,12 +128,15 @@ class WorkflowApprovalView(models.TransientModel):
             req = record.request_id
             workflow_type_code = req.workflow_type_id.code if req.workflow_type_id else ''
 
-            # Approbation courante
-            current_approval = self.env['workflow.request.approval'].search([
-                ('workflow_request_id', '=', req.id),
-                ('approver_id', '=', self.env.user.id),
-                ('state', '=', 'pending'),
-            ], limit=1)
+            # Approbation courante : priorité à current_approval_id si présent (vue approbateur)
+            if record.current_approval_id:
+                current_approval = record.current_approval_id
+            else:
+                current_approval = self.env['workflow.request.approval'].search([
+                    ('workflow_request_id', '=', req.id),
+                    ('approver_id', '=', self.env.user.id),
+                    ('state', '=', 'pending'),
+                ], limit=1)
 
             all_approvals = self.env['workflow.request.approval'].search([
                 ('workflow_request_id', '=', req.id),
@@ -39,6 +146,26 @@ class WorkflowApprovalView(models.TransientModel):
             history_html          = self._build_approval_history(all_approvals)
             previous_comments_html = self._build_previous_comments(all_approvals, current_approval)
             status_text = "En attente de votre validation" if current_approval else "Déjà validée par vous"
+
+            # ── Indicateur actions configurées pour cette étape ───────────
+            level = current_approval.workflow_level_id if current_approval else None
+            action_names = []
+            if level and level.action_ids:
+                action_names = level.action_ids.sorted(key=lambda a: (a.sequence, a.id)).mapped('name')
+            actions_info_html = ''
+            if action_names:
+                actions_info_html = f'''
+                    <div style="background: #d1e7dd; border: 1px solid #198754; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 14px;">
+                        <strong>⚡ Pour cette étape : {len(action_names)} action(s) configurée(s)</strong>
+                        <span style="color: #0f5132;"> — {', '.join(action_names)}</span>
+                        <br/><small>Utilisez le menu « Action à effectuer » ci-dessous.</small>
+                    </div>'''
+            else:
+                actions_info_html = '''
+                    <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1rem; font-size: 14px;">
+                        <strong>⚠️ Aucune action configurée pour cette étape.</strong>
+                        <br/><small>Les boutons par défaut (Valider / Retourner / Refuser) sont affichés. Pour personnaliser : Configuration → Circuits → ⚙️ Configurer sur l\'étape.</small>
+                    </div>'''
 
             # ── Contenu du dossier selon le type ─────────────────────────
             if workflow_type_code == 'COURRIER':
@@ -72,6 +199,7 @@ class WorkflowApprovalView(models.TransientModel):
                     </div>
 
                     <div style="padding: 2rem;">
+                        {actions_info_html}
 
                         <div style="background: rgba(10, 75, 120, 0.04); border: 2px solid #0a4b78; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
                             <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; color: #0a4b78; font-weight: 600;">{dossier_title}</h3>
@@ -585,46 +713,88 @@ class WorkflowApprovalView(models.TransientModel):
         return modal_html
 
     def _build_documents_section(self, req):
-        """Construit la section des documents"""
-        
+        """Construit la section des documents pour un crédit — accès sudo pour éviter les erreurs de droits."""
+        # On passe par la relation Many2many (workflow_request_attachment_rel) avec sudo
+        att_ids = req.sudo().attachment_ids.ids
+        attachments = self.env['ir.attachment'].sudo().browse(att_ids)
+
         docs_html = []
-        
-        # Utiliser sudo() pour accéder aux pièces jointes
-        attachments = req.sudo().attachment_ids
+
         if attachments:
-            for attachment in attachments:
-                # Taille formatée
-                size_kb = attachment.file_size / 1024 if attachment.file_size else 0
-                if size_kb > 1024:
-                    size_str = f"{size_kb/1024:.1f} MB"
-                else:
-                    size_str = f"{size_kb:.0f} KB"
-                
-                doc_html = f'''
+            preview_html = ''
+            for idx, att in enumerate(attachments):
+                size_kb  = att.file_size / 1024 if att.file_size else 0
+                size_str = f"{size_kb/1024:.1f} MB" if size_kb > 1024 else f"{size_kb:.0f} KB"
+                mimetype = att.mimetype or ''
+                name     = att.name or 'Document'
+
+                url_view     = f"/web/content/{att.id}/{name}"
+                url_download = f"/web/content/{att.id}/{name}?download=true"
+
+                is_pdf   = 'pdf' in mimetype
+                is_image = mimetype.startswith('image/')
+                icon     = '🖼️' if is_image else ('📄' if is_pdf else '📎')
+
+                # Prévisualisation inline pour le 1er document
+                if idx == 0:
+                    if is_pdf:
+                        preview_html = f'''
+                            <div style="margin-bottom: 1.5rem; border: 2px solid #0a4b78; border-radius: 10px; overflow: hidden;">
+                                <div style="background: #0a4b78; color: white; padding: 0.75rem 1rem; font-weight: 600; font-size: 14px;">
+                                    👁️ Aperçu — {name}
+                                </div>
+                                <iframe src="{url_view}"
+                                        style="width: 100%; height: 700px; border: none; display: block;"
+                                        title="{name}">
+                                </iframe>
+                            </div>'''
+                    elif is_image:
+                        preview_html = f'''
+                            <div style="margin-bottom: 1.5rem; border: 2px solid #0a4b78; border-radius: 10px; overflow: hidden;">
+                                <div style="background: #0a4b78; color: white; padding: 0.75rem 1rem; font-weight: 600; font-size: 14px;">
+                                    👁️ Aperçu — {name}
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: #f8f9fa;">
+                                    <img src="{url_view}"
+                                         style="max-width: 100%; max-height: 700px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.15);"
+                                         alt="{name}"/>
+                                </div>
+                            </div>'''
+
+                docs_html.append(f'''
                     <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
-                        <span style="font-size: 24px;">📄</span>
+                        <span style="font-size: 24px;">{icon}</span>
                         <div style="flex: 1;">
-                            <div style="font-weight: 600;">{attachment.name}</div>
-                            <div style="font-size: 12px; color: #6c757d;">{attachment.mimetype or 'Document'} • {size_str}</div>
+                            <div style="font-weight: 600;">{name}</div>
+                            <div style="font-size: 12px; color: #6c757d;">{mimetype or 'Document'} • {size_str}</div>
                         </div>
-                        <a href="/web/content/{attachment.id}?download=true" target="_blank" style="background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 14px;">Télécharger</a>
-                    </div>
-                '''
-                docs_html.append(doc_html)
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="{url_view}" target="_blank"
+                               style="background: #0a4b78; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                               👁 Visualiser
+                            </a>
+                            <a href="{url_download}" target="_blank"
+                               style="background: #6c757d; color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600;">
+                               ⬇ Télécharger
+                            </a>
+                        </div>
+                    </div>''')
+
+            return f'''
+                <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #dee2e6;">
+                    <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; font-weight: 600;">📎 Document(s) à examiner</h3>
+                    {preview_html}
+                    {''.join(docs_html)}
+                </div>'''
         else:
-            docs_html.append('''
-                <div style="text-align: center; padding: 2rem; color: #6c757d; background: #f8f9fa; border-radius: 8px;">
-                    <span style="font-size: 48px; display: block; margin-bottom: 0.5rem;">📎</span>
-                    <p style="margin: 0;">Aucun document attaché à cette demande</p>
-                </div>
-            ''')
-        
-        return f'''
-            <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #dee2e6;">
-                <h3 style="margin: 0 0 1.5rem 0; font-size: 18px; font-weight: 600;">📎 Documents à examiner</h3>
-                {''.join(docs_html)}
-            </div>
-        '''
+            return '''
+                <div style="margin-top: 2rem; background: white; border-radius: 12px; padding: 1.5rem; border: 1px solid #dee2e6;">
+                    <h3 style="margin: 0 0 1rem 0; font-size: 18px; font-weight: 600;">📎 Documents à examiner</h3>
+                    <div style="text-align: center; padding: 2rem; color: #6c757d; background: #f8f9fa; border-radius: 8px;">
+                        <span style="font-size: 48px; display: block; margin-bottom: 0.5rem;">📎</span>
+                        <p style="margin: 0;">Aucun document attaché à cette demande</p>
+                    </div>
+                </div>'''
 
     @api.model
     def action_open_approval_view(self):
@@ -663,11 +833,16 @@ class WorkflowApprovalView(models.TransientModel):
                 'context': self.env.context,
             }
         
+        # Vérifier si l'étape a des actions configurées
+        level = pending_approvals[0].workflow_level_id
+        has_actions = bool(level and level.action_ids)
+
         # Créer un enregistrement transient avec la seule demande en attente
         approval_view = self.create({
             'request_id': pending_approvals[0].workflow_request_id.id,
             'current_approval_id': pending_approvals[0].id,
-            'comment': '',  # Valeur par défaut vide, sera rempli par l'utilisateur
+            'has_configured_actions': has_actions,
+            'comment': '',
         })
         
         return {
@@ -714,21 +889,13 @@ class WorkflowApprovalView(models.TransientModel):
         ])
         
         if pending_at_current_level:
-            # Il reste des validateurs à ce niveau qui n'ont pas encore approuvé
-            # On garde la demande en "in_progress" et on attend les autres
+            # Il reste des validateurs à ce niveau — on passe en in_progress
             self.request_id.write({'state': 'in_progress'})
-            
-            return {
-                'type': 'ir.actions.client',
-                'tag': 'display_notification',
-                'params': {
-                    'title': 'Demande approuvée',
-                    'message': f'Votre validation a été enregistrée. En attente des autres validateurs du niveau {current_level.name}.',
-                    'type': 'success',
-                    'sticky': False,
-                    'next': {'type': 'ir.actions.act_window_close'},
-                }
-            }
+            return self._redirect_to_request(
+                title='✅ Validation enregistrée',
+                message=f'Votre approbation a été prise en compte. En attente des autres validateurs du niveau « {current_level.name} ».',
+                notif_type='success',
+            )
         
         # Toutes les approbations du niveau actuel sont validées
         # Chercher s'il y a un niveau suivant dans le circuit
@@ -771,15 +938,18 @@ class WorkflowApprovalView(models.TransientModel):
             # Pas de niveau suivant, c'est le dernier niveau, approuver
             self.request_id.write({'state': 'approved'})
         
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'message': 'Demande validée avec succès',
-                'type': 'success',
-                'sticky': False,
-            }
-        }
+        state_after = self.request_id.state
+        if state_after == 'approved':
+            return self._redirect_to_request(
+                title='✅ Demande approuvée',
+                message=f'La demande « {self.request_id.name} » a été approuvée et clôturée.',
+                notif_type='success',
+            )
+        return self._redirect_to_request(
+            title='✅ Validation transmise',
+            message=f'La demande « {self.request_id.name} » passe au niveau suivant.',
+            notif_type='success',
+        )
 
     def action_reject(self):
         """Refuser la demande"""
@@ -808,16 +978,11 @@ class WorkflowApprovalView(models.TransientModel):
         
         # Refuser la demande complète
         self.request_id.write({'state': 'rejected'})
-        
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'message': 'Demande refusée',
-                'type': 'warning',
-                'sticky': False,
-            }
-        }
+        return self._redirect_to_request(
+            title='❌ Demande refusée',
+            message=f'La demande « {self.request_id.name} » a été refusée.',
+            notif_type='danger',
+        )
 
     def action_return(self):
         """Retourner au niveau précédent"""
@@ -852,21 +1017,15 @@ class WorkflowApprovalView(models.TransientModel):
         ], order='sequence desc', limit=1)
         
         if previous_level:
-            # Réactiver l'approbation du niveau précédent
             previous_approval = self.env['workflow.request.approval'].search([
                 ('workflow_request_id', '=', self.request_id.id),
                 ('workflow_level_id', '=', previous_level.id)
             ], limit=1)
-            
             if previous_approval:
                 previous_approval.write({'state': 'pending'})
-        
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'message': 'Demande retournée au niveau précédent',
-                'type': 'info',
-                'sticky': False,
-            }
-        }
+
+        return self._redirect_to_request(
+            title='↩️ Demande retournée',
+            message=f'La demande « {self.request_id.name} » a été retournée au niveau précédent.',
+            notif_type='warning',
+        )

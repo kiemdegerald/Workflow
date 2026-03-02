@@ -227,59 +227,79 @@ class WorkflowRequestWizard(models.TransientModel):
             'attachment_ids': [(6, 0, self.attachment_ids.ids)],
         })
         
+        # Rattacher les pièces jointes au workflow.request (res_model + res_id corrects)
+        if self.attachment_ids:
+            self.attachment_ids.sudo().write({
+                'res_model': 'workflow.request',
+                'res_id': request.id,
+            })
+
         # Message de confirmation dans le chatter
         request.message_post(
             body=_("✅ Demande créée en brouillon par %s") % self.env.user.name,
             message_type='notification'
         )
         
-        # Retourne une redirection vers le backend Odoo avec menu
+        # Ouvre directement le formulaire de la demande créée
         return {
-            'type': 'ir.actions.act_url',
-            'url': f'/web#id={request.id}&model=workflow.request&view_type=form',
-            'target': 'self',
+            'type': 'ir.actions.act_window',
+            'name': f'Demande {reference}',
+            'res_model': 'workflow.request',
+            'view_mode': 'form',
+            'res_id': request.id,
+            'target': 'current',
         }
 
     def _create_workflow_approvals(self, request):
-        """Crée automatiquement toutes les approbations pour les niveaux du circuit"""
+        """Crée une approbation pour CHAQUE approbateur de chaque niveau du circuit.
+        - Niveau 0 : état 'pending' (actif immédiatement)
+        - Niveaux suivants : état 'waiting' (activés progressivement)
+        """
         if not request.workflow_definition_id:
-            return
-        
-        # Récupérer tous les niveaux du circuit, triés par séquence
+            return 0
+
         levels = self.env['workflow.level'].search([
             ('workflow_definition_id', '=', request.workflow_definition_id.id),
-            ('active', '=', True)
+            ('active', '=', True),
         ], order='sequence, id')
-        
+
         if not levels:
-            return
-        
-        # Créer une approbation pour chaque niveau
+            return 0
+
+        total = 0
         for idx, level in enumerate(levels):
-            # IMPORTANT : Seul le premier niveau est actif (pending)
-            # Les autres niveaux sont en attente du précédent (waiting)
             approval_state = 'pending' if idx == 0 else 'waiting'
-            
-            # Déterminer l'approbateur pour ce niveau
-            # Si le niveau a des approbateurs assignés, prendre le premier
-            # Sinon, utiliser l'admin par défaut
+
             if level.approver_ids:
-                approver = level.approver_ids[0]
+                # Une approbation par approbateur → chacun peut valider de son côté
+                for approver in level.approver_ids:
+                    self.env['workflow.request.approval'].create({
+                        'name': f"Approbation {level.name} - {request.name}",
+                        'workflow_request_id': request.id,
+                        'workflow_level_id': level.id,
+                        'approver_id': approver.id,
+                        'state': approval_state,
+                        'comments': '',
+                    })
+                    total += 1
             else:
-                approver = self.env.ref('base.user_admin', raise_if_not_found=False)
-                if not approver:
-                    approver = self.env['res.users'].search([('active', '=', True)], limit=1)
-            
-            self.env['workflow.request.approval'].create({
-                'name': f"Approbation {level.name} - {request.name}",
-                'workflow_request_id': request.id,
-                'workflow_level_id': level.id,
-                'approver_id': approver.id,
-                'state': approval_state,
-                'comments': '',
-            })
-        
-        return len(levels)
+                # Aucun approbateur configuré → fallback sur l'admin
+                fallback = (
+                    self.env.ref('base.user_admin', raise_if_not_found=False)
+                    or self.env['res.users'].search([('active', '=', True)], limit=1)
+                )
+                if fallback:
+                    self.env['workflow.request.approval'].create({
+                        'name': f"Approbation {level.name} - {request.name}",
+                        'workflow_request_id': request.id,
+                        'workflow_level_id': level.id,
+                        'approver_id': fallback.id,
+                        'state': approval_state,
+                        'comments': '',
+                    })
+                    total += 1
+
+        return total
 
     def action_submit_request(self):
         """Soumet la demande directement"""
@@ -315,6 +335,13 @@ class WorkflowRequestWizard(models.TransientModel):
             'attachment_ids': [(6, 0, self.attachment_ids.ids)],
         })
         
+        # Rattacher les pièces jointes au workflow.request (res_model + res_id corrects)
+        if self.attachment_ids:
+            self.attachment_ids.sudo().write({
+                'res_model': 'workflow.request',
+                'res_id': request.id,
+            })
+
         # Créer automatiquement toutes les approbations pour les niveaux du circuit
         nb_levels = self._create_workflow_approvals(request)
         
@@ -328,9 +355,12 @@ class WorkflowRequestWizard(models.TransientModel):
             message_type='notification'
         )
         
-        # Retourne une redirection vers le backend Odoo avec menu
+        # Ouvre directement le formulaire de la demande soumise
         return {
-            'type': 'ir.actions.act_url',
-            'url': f'/web#id={request.id}&model=workflow.request&view_type=form',
-            'target': 'self',
+            'type': 'ir.actions.act_window',
+            'name': f'Demande {request.name}',
+            'res_model': 'workflow.request',
+            'view_mode': 'form',
+            'res_id': request.id,
+            'target': 'current',
         }

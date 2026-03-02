@@ -24,11 +24,16 @@ class WorkflowRequestApproval(models.Model):
     def action_open_from_selector(self):
         """Ouvre la vue approbateur pour cette demande spécifique"""
         self.ensure_one()
-        
+
+        # Vérifier si l'étape a des actions configurées
+        level = self.workflow_level_id
+        has_actions = bool(level and level.action_ids)
+
         # Créer un enregistrement transient pour la vue approbateur
         approval_view = self.env['workflow.approval.view'].create({
             'request_id': self.workflow_request_id.id,
             'current_approval_id': self.id,
+            'has_configured_actions': has_actions,
             'comment': '',
         })
         

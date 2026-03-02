@@ -34,35 +34,129 @@
         <field name="arch" type="xml">
             <form string="Vue Approbateur">
                 <sheet>
+                    <!-- Champs techniques invisibles -->
                     <field name="request_id" invisible="1"/>
                     <field name="current_approval_id" invisible="1"/>
-                    
+                    <field name="current_level_id" invisible="1"/>
+                    <field name="has_configured_actions" invisible="1"/>
+                    <field name="selected_action_color" invisible="1"/>
+
                     <!-- Affichage HTML du dossier complet -->
                     <field name="approval_html" widget="html" nolabel="1"/>
-                    
+
                     <!-- Séparateur visuel -->
-                    <div style="margin: 2rem 0; border-top: 2px solid #dee2e6;"></div>
-                    
-                    <!-- Section Actions pleine largeur -->
-                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #0a4b78; border-radius: 12px; padding: 2rem; margin: 1rem 0;">
-                        <h3 style="margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 700; color: #0a4b78;">⚡ Actions disponibles</h3>
-                        <p style="margin: 0 0 2rem 0; color: #6c757d; font-size: 14px;">Choisissez une action et ajoutez obligatoirement un commentaire</p>
-                        
-                        <!-- Boutons d'action sur 3 colonnes -->
-                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
-                            <button name="action_approve" type="object" string="✓ Valider" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #4caf50 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(76, 175, 80, 0.3) !important; text-align: center !important;"/>
-                            <button name="action_return" type="object" string="↩ Retourner au niveau précédent" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #ff9800 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3) !important; text-align: center !important;"/>
-                            <button name="action_reject" type="object" string="✗ Refuser" style="padding: 1.5rem !important; font-size: 18px !important; background-color: #f44336 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important; box-shadow: 0 4px 6px rgba(244, 67, 54, 0.3) !important; text-align: center !important;"/>
+                    <div style="margin: 2rem 0; border-top: 2px solid #dee2e6;"/>
+
+                    <!-- ============================================================
+                         SECTION A : Actions CONFIGURÉES (depuis workflow.level.action)
+                         Affichée quand des actions ont été configurées sur le niveau.
+                         ============================================================ -->
+                    <div invisible="not has_configured_actions"
+                         style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #0a4b78; border-radius: 12px; padding: 2rem; margin: 1rem 0;">
+
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 700; color: #0a4b78;">
+                            ⚡ Actions disponibles
+                        </h3>
+                        <p style="margin: 0 0 1.5rem 0; color: #6c757d; font-size: 14px;">
+                            Sélectionnez l'action à effectuer, ajoutez un commentaire, puis cliquez sur le bouton.
+                        </p>
+
+                        <!-- Sélecteur d'action -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <div class="o_form_label" style="margin-bottom: 0.5rem; font-weight: 700; font-size: 15px; color: #1a1a1a;">
+                                Action à effectuer <span style="color: #dc3545;">*</span>
+                            </div>
+                            <field name="selected_action_id"
+                                   nolabel="1"
+                                   placeholder="Choisir une action..."
+                                   style="width: 100%; font-size: 15px;"/>
                         </div>
-                        
-                        <!-- Zone de commentaire large -->
-                        <div>
-                            <label for="comment" style="display: block; margin-bottom: 0.75rem; font-weight: 700; font-size: 15px; color: #1a1a1a;">
-                                <span style="color: #dc3545;">*</span> Commentaire obligatoire
-                            </label>
-                            <field name="comment" placeholder="Saisissez votre commentaire ou vos instructions de correction..." nolabel="1" widget="text" style="width: 100%; min-height: 150px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical;"/>
+
+                        <!-- Zone de commentaire -->
+                        <div style="margin-bottom: 1.5rem;">
+                            <div class="o_form_label" style="margin-bottom: 0.5rem; font-weight: 700; font-size: 15px; color: #1a1a1a;">
+                                Commentaire <span style="color: #dc3545;">*</span>
+                            </div>
+                            <field name="comment"
+                                   placeholder="Saisissez votre commentaire, observations ou instructions..."
+                                   nolabel="1"
+                                   widget="text"
+                                   style="width: 100%; min-height: 120px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical;"/>
+                        </div>
+
+                        <!-- Bouton coloré selon l'action choisie (6 variantes, une seule visible) -->
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-primary oe_highlight"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'primary'"/>
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-success"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'success'"/>
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-danger"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'danger'"/>
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-warning"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'warning'"/>
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-secondary"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'secondary'"/>
+                        <button name="action_execute" type="object" string="▶ Exécuter"
+                                class="btn-info"
+                                style="width:100%;padding:1.2rem !important;font-size:16px !important;font-weight:700 !important;border-radius:10px !important;"
+                                invisible="not selected_action_id or selected_action_color != 'info'"/>
+                        <!-- Message si aucune action sélectionnée -->
+                        <div invisible="selected_action_id"
+                             style="text-align:center;padding:1rem;background:#f8f9fa;border-radius:8px;color:#6c757d;font-size:14px;">
+                            ← Sélectionnez une action dans le menu ci-dessus
                         </div>
                     </div>
+
+                    <!-- ============================================================
+                         SECTION B : Actions PAR DÉFAUT (rétrocompatibilité)
+                         Affichée uniquement quand AUCUNE action n'est configurée.
+                         ============================================================ -->
+                    <div invisible="has_configured_actions"
+                         style="background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #6c757d; border-radius: 12px; padding: 2rem; margin: 1rem 0;">
+
+                        <h3 style="margin: 0 0 0.5rem 0; font-size: 20px; font-weight: 700; color: #495057;">
+                            ⚡ Actions disponibles
+                        </h3>
+                        <p style="margin: 0 0 1.5rem 0; color: #6c757d; font-size: 13px;">
+                            ℹ️ Aucune action configurée sur cette étape — boutons standard affichés.
+                            Configurez des actions dans <strong>Configuration → Circuits → ⚙️ Configurer</strong>.
+                        </p>
+
+                        <!-- Boutons standard (3 colonnes) -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                            <button name="action_approve" type="object"
+                                    string="✓ Valider"
+                                    style="padding: 1.5rem !important; font-size: 16px !important; background-color: #4caf50 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important;"/>
+                            <button name="action_return" type="object"
+                                    string="↩ Retourner"
+                                    style="padding: 1.5rem !important; font-size: 16px !important; background-color: #ff9800 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important;"/>
+                            <button name="action_reject" type="object"
+                                    string="✗ Refuser"
+                                    style="padding: 1.5rem !important; font-size: 16px !important; background-color: #f44336 !important; color: white !important; border: none !important; border-radius: 10px !important; cursor: pointer !important; font-weight: 700 !important;"/>
+                        </div>
+
+                        <!-- Zone de commentaire -->
+                        <div>
+                            <div class="o_form_label" style="margin-bottom: 0.75rem; font-weight: 700; font-size: 15px; color: #1a1a1a;">
+                                <span style="color: #dc3545;">*</span> Commentaire obligatoire
+                            </div>
+                            <field name="comment"
+                                   placeholder="Saisissez votre commentaire ou vos instructions de correction..."
+                                   nolabel="1"
+                                   widget="text"
+                                   style="width: 100%; min-height: 150px; padding: 1rem; border: 2px solid #dee2e6; border-radius: 8px; font-size: 15px; resize: vertical;"/>
+                        </div>
+                    </div>
+
                 </sheet>
             </form>
         </field>

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Workflow',
-    'version': '17.0.1.0.0',
+    'version': '17.0.1.1.0',
     'category': 'Productivity',
     'summary': 'Système générique de validation hiérarchique multi-niveaux pour institutions financières',
     'description': """
