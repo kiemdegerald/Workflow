@@ -28,7 +28,6 @@ class WorkflowType(models.Model):
         string='Code technique',
         required=True,
         tracking=True,
-        readonly=True,
         help="Généré automatiquement depuis le nom. Référence interne.",
     )
     category = fields.Selection([
@@ -42,9 +41,17 @@ class WorkflowType(models.Model):
 
     @api.onchange('name')
     def _onchange_name_generate_code(self):
-        """Génère automatiquement le code depuis le nom si le code n'est pas encore défini."""
-        if self.name and not self.id:  # Seulement à la création (pas de modification)
+        """Génère automatiquement le code depuis le nom (aperçu client-side)."""
+        if self.name:
             self.code = _sanitize_code(self.name)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        """Génère le code côté serveur si absent (sécurité supplémentaire)."""
+        for vals in vals_list:
+            if not vals.get('code') and vals.get('name'):
+                vals['code'] = _sanitize_code(vals['name'])
+        return super().create(vals_list)
 
     @api.constrains('code')
     def _check_code_format(self):
