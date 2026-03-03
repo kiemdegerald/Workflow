@@ -36,6 +36,15 @@ class WorkflowApprovalView(models.TransientModel):
         default='primary',
     )
 
+    # Documents joints lors de l'action (optionnel — pièces manquantes, justificatifs, etc.)
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'workflow_approval_view_attachment_rel',
+        'approval_view_id',
+        'attachment_id',
+        string='Documents joints (optionnel)',
+    )
+
     @api.onchange('selected_action_id')
     def _onchange_selected_action_id(self):
         if self.selected_action_id:
@@ -95,6 +104,9 @@ class WorkflowApprovalView(models.TransientModel):
         self.ensure_one()
         if not self.current_approval_id:
             raise UserError("Aucune approbation en attente trouvée.")
+
+        # Transférer les fichiers joints si présents
+        self._transfer_attachments_to_approval()
 
         self.env['workflow.request.comment'].create({
             'name': f"Demande d'info - {self.current_approval_id.workflow_level_id.name}",
@@ -544,6 +556,33 @@ class WorkflowApprovalView(models.TransientModel):
             # Style différent si pas de commentaire
             comment_style = 'font-style: italic; color: #6c757d;' if comment == 'Pas encore de commentaire' else 'font-style: italic; color: #495057;'
             
+            # Construire la liste des fichiers joints pour cette approbation
+            attachments_html = ''
+            if approval.attachment_ids:
+                att_items = []
+                base_url = self.env['ir.config_parameter'].sudo().get_param('web.base.url', '')
+                for att in approval.attachment_ids.sudo():
+                    ext = (att.name or '').rsplit('.', 1)[-1].lower() if '.' in (att.name or '') else ''
+                    is_image = ext in ('png', 'jpg', 'jpeg', 'gif', 'webp', 'svg')
+                    preview = f'<img src="{base_url}/web/image/{att.id}" style="max-width:100%;max-height:200px;border-radius:6px;border:1px solid #dee2e6;display:block;margin-bottom:0.5rem;" alt="{att.name}"/>' if is_image else ''
+                    att_items.append(f'''
+                        <div style="display:flex;flex-direction:column;align-items:flex-start;background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:0.75rem;margin-bottom:0.5rem;">
+                            {preview}
+                            <div style="display:flex;align-items:center;gap:0.75rem;">
+                                <span style="font-size:22px;">{"🖼️" if is_image else "📄"}</span>
+                                <span style="font-size:13px;font-weight:600;color:#212529;">{att.name}</span>
+                                <a href="{base_url}/web/content/{att.id}?download=true" target="_blank"
+                                   style="background:#0a4b78;color:white;padding:0.3rem 0.75rem;border-radius:4px;text-decoration:none;font-size:12px;font-weight:600;">⬇ Télécharger</a>
+                                <a href="{base_url}/web/image/{att.id}" target="_blank"
+                                   style="background:#6c757d;color:white;padding:0.3rem 0.75rem;border-radius:4px;text-decoration:none;font-size:12px;font-weight:600;">👁 Voir</a>
+                            </div>
+                        </div>''')
+                attachments_html = f'''
+                    <div style="margin-top:0.75rem;">
+                        <div style="font-size:13px;font-weight:700;color:#495057;margin-bottom:0.5rem;">📎 Documents joints ({len(approval.attachment_ids)}) :</div>
+                        {''.join(att_items)}
+                    </div>'''
+
             item_html = f'''
                 <div style="background: {bg_color}; border-left: 4px solid {border_color}; border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                     <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
@@ -560,6 +599,7 @@ class WorkflowApprovalView(models.TransientModel):
                     </div>
                     <div style="background: white; padding: 1rem; border-radius: 6px; color: #212529; line-height: 1.6; border: 1px solid rgba(0,0,0,0.05);">
                         <div style="{comment_style}">"{comment}"</div>
+                        {attachments_html}
                     </div>
                 </div>
             '''
@@ -855,6 +895,27 @@ class WorkflowApprovalView(models.TransientModel):
             'context': self.env.context,
         }
 
+    def _transfer_attachments_to_approval(self):
+        """Transfère les fichiers joints depuis la vue transient vers l'approbation permanente."""
+        if not self.attachment_ids or not self.current_approval_id:
+            return
+        att_ids = self.attachment_ids.ids
+        if att_ids:
+            # Lier les fichiers au workflow.request (res_model/res_id) pour les droits d'accès
+            self.attachment_ids.sudo().write({
+                'res_model': 'workflow.request',
+                'res_id': self.request_id.id,
+            })
+            # Ajouter dans la Many2many du workflow.request pour que TOUS les approbateurs
+            # puissent les voir dans la section "Documents à examiner"
+            self.request_id.sudo().write({
+                'attachment_ids': [(4, att_id) for att_id in att_ids],
+            })
+            # Stocker aussi sur l'approbation pour l'historique (qui l'a ajouté, à quelle étape)
+            self.current_approval_id.sudo().write({
+                'attachment_ids': [(4, att_id) for att_id in att_ids],
+            })
+
     def action_approve(self):
         """Valider la demande"""
         self.ensure_one()
@@ -862,7 +923,9 @@ class WorkflowApprovalView(models.TransientModel):
         if not self.current_approval_id:
             raise UserError("Aucune approbation en attente trouvée.")
         
-        # Le commentaire est maintenant obligatoire (required=True)
+        # Transférer les fichiers joints vers l'approbation permanente
+        self._transfer_attachments_to_approval()
+
         # Mettre à jour l'approbation
         self.current_approval_id.write({
             'state': 'approved',
@@ -958,7 +1021,9 @@ class WorkflowApprovalView(models.TransientModel):
         if not self.current_approval_id:
             raise UserError("Aucune approbation en attente trouvée.")
         
-        # Le commentaire est obligatoire (required=True dans le champ)
+        # Transférer les fichiers joints
+        self._transfer_attachments_to_approval()
+
         # Mettre à jour l'approbation
         self.current_approval_id.write({
             'state': 'rejected',
@@ -991,7 +1056,9 @@ class WorkflowApprovalView(models.TransientModel):
         if not self.current_approval_id:
             raise UserError("Aucune approbation en attente trouvée.")
         
-        # Le commentaire est obligatoire (required=True dans le champ)
+        # Transférer les fichiers joints
+        self._transfer_attachments_to_approval()
+
         # Mettre à jour l'approbation courante
         self.current_approval_id.write({
             'state': 'returned',

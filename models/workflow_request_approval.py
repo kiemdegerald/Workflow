@@ -21,6 +21,15 @@ class WorkflowRequestApproval(models.Model):
     ], string='État', required=True, default='waiting')
     comments = fields.Text(string='Commentaires')
 
+    # Documents joints lors de l'action (pièces justificatives, documents manquants, etc.)
+    attachment_ids = fields.Many2many(
+        'ir.attachment',
+        'workflow_approval_attachment_rel',
+        'approval_id',
+        'attachment_id',
+        string='Documents joints',
+    )
+
     def action_open_from_selector(self):
         """Ouvre la vue approbateur pour cette demande spécifique"""
         self.ensure_one()
