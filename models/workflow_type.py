@@ -38,6 +38,12 @@ class WorkflowType(models.Model):
        help="Détermine dans quel tableau de bord et quelle liste ce type apparaît.")
     description = fields.Text(string='Description')
     active = fields.Boolean(string='Actif', default=True, tracking=True)
+    custom_field_ids = fields.One2many(
+        'workflow.custom.field',
+        'workflow_type_id',
+        string='Champs du formulaire',
+        help='Champs personnalisés que l\'utilisateur devra remplir lors de la création d\'une demande de ce type.',
+    )
 
     @api.onchange('name')
     def _onchange_name_generate_code(self):

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="workflow.DynamicFormWidget">
+        <!-- Aucun champ : message d'attente -->
+        <div t-if="lines.length === 0"
+             class="o_workflow_dynamic_empty">
+            <i class="fa fa-info-circle" style="margin-right: 6px; color: #0d6efd;"/>
+            Sélectionnez un type de workflow pour afficher les champs du formulaire.
+        </div>
+
+        <!-- Liste des champs personnalisés -->
+        <div t-else="" class="o_workflow_dynamic_form">
+            <t t-foreach="lines" t-as="line" t-key="line_index">
+                <div class="o_dynamic_field_row">
+
+                    <!-- Label -->
+                    <div class="o_dynamic_field_label">
+                        <t t-esc="line.data.field_name"/>
+                        <span t-if="line.data.required"
+                              class="o_required_star"
+                              title="Champ obligatoire"> *</span>
+                    </div>
+
+                    <!-- Input selon le type -->
+                    <div class="o_dynamic_field_input">
+
+                        <!-- TEXTE COURT -->
+                        <input t-if="line.data.field_type === 'char'"
+                               type="text"
+                               class="o_input"
+                               t-att-value="getValue(line) || ''"
+                               t-att-placeholder="line.data.placeholder || ''"
+                               t-on-change="(e) => this.onFieldChange(line, e)"/>
+
+                        <!-- TEXTE LONG -->
+                        <textarea t-elif="line.data.field_type === 'text'"
+                                  class="o_input o_dynamic_textarea"
+                                  t-att-placeholder="line.data.placeholder || ''"
+                                  t-on-change="(e) => this.onFieldChange(line, e)"><t t-esc="getValue(line) || ''"/></textarea>
+
+                        <!-- ENTIER -->
+                        <input t-elif="line.data.field_type === 'integer'"
+                               type="number"
+                               step="1"
+                               class="o_input"
+                               t-att-value="getValue(line) || 0"
+                               t-att-placeholder="line.data.placeholder || ''"
+                               t-on-change="(e) => this.onFieldChange(line, e)"/>
+
+                        <!-- DÉCIMAL -->
+                        <input t-elif="line.data.field_type === 'float'"
+                               type="number"
+                               step="0.01"
+                               class="o_input"
+                               t-att-value="getValue(line) || 0"
+                               t-att-placeholder="line.data.placeholder || ''"
+                               t-on-change="(e) => this.onFieldChange(line, e)"/>
+
+                        <!-- BOOLÉEN / OUI-NON -->
+                        <div t-elif="line.data.field_type === 'boolean'"
+                             class="o_dynamic_boolean_row">
+                            <label class="o_switch">
+                                <input type="checkbox"
+                                       t-att-checked="getValue(line)"
+                                       t-on-change="(e) => this.onFieldChange(line, e)"/>
+                                <span class="o_switch_slider"/>
+                            </label>
+                            <span class="o_dynamic_boolean_label">
+                                <t t-if="getValue(line)">Oui</t>
+                                <t t-else="">Non</t>
+                            </span>
+                        </div>
+
+                        <!-- DATE -->
+                        <input t-elif="line.data.field_type === 'date'"
+                               type="date"
+                               class="o_input"
+                               t-att-value="getValue(line) || ''"
+                               t-on-change="(e) => this.onFieldChange(line, e)"/>
+
+                        <!-- DATE ET HEURE -->
+                        <input t-elif="line.data.field_type === 'datetime'"
+                               type="datetime-local"
+                               class="o_input"
+                               t-att-value="getValue(line) || ''"
+                               t-on-change="(e) => this.onFieldChange(line, e)"/>
+
+                        <!-- LISTE DÉROULANTE -->
+                        <select t-elif="line.data.field_type === 'selection'"
+                                class="o_input o_dynamic_select"
+                                t-on-change="(e) => this.onFieldChange(line, e)">
+                            <option value="">-- Choisir --</option>
+                            <t t-foreach="getSelectionOptions(line)" t-as="opt" t-key="opt">
+                                <option t-att-value="opt"
+                                        t-att-selected="getValue(line) === opt">
+                                    <t t-esc="opt"/>
+                                </option>
+                            </t>
+                        </select>
+
+                        <!-- Texte indicatif (hors booléen) -->
+                        <div t-if="line.data.placeholder and line.data.field_type !== 'boolean'"
+                             class="o_dynamic_field_hint">
+                            <i class="fa fa-lightbulb-o"/> <t t-esc="line.data.placeholder"/>
+                        </div>
+
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

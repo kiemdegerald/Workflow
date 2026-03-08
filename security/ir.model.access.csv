@@ -9,6 +9,8 @@ access_workflow_request_approval_user,access.workflow.request.approval.user,mode
 access_workflow_request_comment_user,access.workflow.request.comment.user,model_workflow_request_comment,base.group_user,1,1,1,1
 access_workflow_instance_user,access.workflow.instance.user,model_workflow_instance,base.group_user,1,1,1,1
 access_workflow_custom_field_user,access.workflow.custom.field.user,model_workflow_custom_field,base.group_user,1,1,1,1
+access_workflow_request_custom_value_user,access.workflow.request.custom.value.user,model_workflow_request_custom_value,base.group_user,1,1,1,1
+access_workflow_wizard_custom_value_user,access.workflow.wizard.custom.value.user,model_workflow_wizard_custom_value,base.group_user,1,1,1,1
 access_workflow_request_document_user,access.workflow.request.document.user,model_workflow_request_document,base.group_user,1,1,1,1
 access_workflow_notification_user,access.workflow.notification.user,model_workflow_notification,base.group_user,1,1,1,1
 access_workflow_audit_log_user,access.workflow.audit.log.user,model_workflow_audit_log,base.group_user,1,1,1,0

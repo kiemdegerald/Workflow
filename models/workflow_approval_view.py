@@ -191,6 +191,8 @@ class WorkflowApprovalView(models.TransientModel):
                 header_color = 'linear-gradient(135deg, #0a4b78 0%, #0d5a8f 100%)'
                 dossier_title = '📋 Dossier crédit à examiner'
 
+            custom_fields_html = record._build_custom_fields_html(req)
+
             html = f'''
             <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background: #f8f9fa; padding: 2rem;">
 
@@ -219,6 +221,7 @@ class WorkflowApprovalView(models.TransientModel):
                             {history_html}
                         </div>
 
+                        {custom_fields_html}
                         {previous_comments_html}
                         {documents_html}
                     </div>
@@ -277,6 +280,38 @@ class WorkflowApprovalView(models.TransientModel):
                 </div>
             </div>
             {description_block}'''
+
+    def _build_custom_fields_html(self, req):
+        """Génère le bloc HTML des champs personnalisés d'une demande."""
+        custom_values = req.custom_value_ids.sorted(key=lambda v: (v.sequence, v.id))
+        if not custom_values:
+            return ''
+
+        rows_html = ''
+        for val in custom_values:
+            display = val.value_display or '<em style="color:#adb5bd;">Non renseigné</em>'
+            rows_html += f'''
+                <div style="display: flex; border-bottom: 1px solid #e9ecef; padding: 0.6rem 0;">
+                    <div style="flex: 0 0 45%; font-size: 13px; color: #6c757d; font-weight: 600;
+                                text-transform: uppercase; letter-spacing: 0.5px; padding-right: 1rem;">
+                        {val.field_name}
+                        {'<span style="color:#dc3545;"> *</span>' if val.required else ''}
+                    </div>
+                    <div style="flex: 1; font-weight: 600; font-size: 14px; color: #1a1a1a;">
+                        {display}
+                    </div>
+                </div>'''
+
+        return f'''
+            <div style="background: rgba(25, 135, 84, 0.04); border: 2px solid #198754;
+                        border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 16px; color: #198754; font-weight: 600;">
+                    📋 Informations complémentaires du formulaire
+                </h3>
+                <div>
+                    {rows_html}
+                </div>
+            </div>'''
 
     def _build_dossier_courrier(self, req):
         """HTML du dossier pour un courrier entrant."""

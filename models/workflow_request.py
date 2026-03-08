@@ -76,6 +76,13 @@ class WorkflowRequest(models.Model):
     )
     
     active = fields.Boolean(string='Actif', default=True)
+
+    # Champs personnalisés du formulaire
+    custom_value_ids = fields.One2many(
+        'workflow.request.custom.value',
+        'request_id',
+        string='Champs du formulaire',
+    )
     
     @api.depends('attachment_ids')
     def _compute_attachment_count(self):

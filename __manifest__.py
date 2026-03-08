@@ -84,6 +84,8 @@
         'web.assets_backend': [
             'workflow/static/src/css/workflow_theme.css',
             'workflow/static/src/js/workflow_theme.js',
+            'workflow/static/src/xml/dynamic_form_widget.xml',
+            'workflow/static/src/js/dynamic_form_widget.js',
         ],
         'web.assets_frontend': [
             'workflow/static/src/css/workflow_dashboard.css',

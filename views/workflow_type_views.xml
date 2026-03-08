@@ -48,6 +48,53 @@
                         <group>
                             <field name="description" placeholder="Description du type de workflow..."/>
                         </group>
+
+                        <!-- Onglet : Champs personnalisés du formulaire -->
+                        <notebook>
+                            <page string="Champs du formulaire" name="custom_fields">
+                                <div class="alert alert-info" style="margin: 0 0 12px 0; padding: 10px 14px; border-radius: 8px; font-size: 13px;">
+                                    <strong>ℹ️ Template de formulaire :</strong>
+                                    Définissez ici les champs supplémentaires que l'utilisateur devra remplir lors de la création d'une demande de ce type.
+                                    Ces champs apparaîtront automatiquement dans le formulaire de création.
+                                </div>
+                                <field name="custom_field_ids" nolabel="1">
+                                    <tree string="Champs du formulaire" editable="bottom">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" string="Nom du champ"
+                                               placeholder="Ex : Garantie, Durée, Objet..."/>
+                                        <field name="field_type"/>
+                                        <field name="required"/>
+                                        <field name="placeholder" string="Texte indicatif"
+                                               optional="show"
+                                               placeholder="Texte d'aide dans le champ..."/>
+                                        <field name="selection_options"
+                                               optional="show"
+                                               invisible="field_type != 'selection'"
+                                               placeholder="Option 1&#10;Option 2&#10;Option 3"/>
+                                        <field name="active" optional="show"/>
+                                    </tree>
+                                    <form string="Champ personnalisé">
+                                        <group>
+                                            <group>
+                                                <field name="name"/>
+                                                <field name="field_type"/>
+                                                <field name="sequence"/>
+                                            </group>
+                                            <group>
+                                                <field name="required"/>
+                                                <field name="active"/>
+                                                <field name="placeholder"/>
+                                            </group>
+                                        </group>
+                                        <group string="Options de sélection"
+                                               invisible="field_type != 'selection'">
+                                            <field name="selection_options" nolabel="1"
+                                                   placeholder="Saisissez une option par ligne :&#10;Option A&#10;Option B&#10;Option C"/>
+                                        </group>
+                                    </form>
+                                </field>
+                            </page>
+                        </notebook>
                     </sheet>
                     <div class="oe_chatter">
                         <field name="message_follower_ids" groups="base.group_user"/>

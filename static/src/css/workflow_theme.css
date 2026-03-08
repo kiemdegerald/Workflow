@@ -945,3 +945,158 @@
     }
 }
 
+/* ============================================================
+   WIDGET DYNAMIQUE : champs personnalisés du formulaire
+   ============================================================ */
+
+.o_workflow_dynamic_empty {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    background: #f0f4ff;
+    border: 1px dashed #0d6efd;
+    color: #084298;
+    font-size: 13px;
+}
+
+.o_workflow_dynamic_form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.o_dynamic_field_row {
+    display: flex;
+    align-items: flex-start;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+    gap: 1.5rem;
+}
+
+.o_dynamic_field_row:last-child {
+    border-bottom: none;
+}
+
+.o_dynamic_field_label {
+    flex: 0 0 220px;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1a1a1a;
+    padding-top: 0.45rem;
+    line-height: 1.4;
+}
+
+.o_required_star {
+    color: #dc3545;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+.o_dynamic_field_input {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.o_dynamic_field_input .o_input {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0.45rem 0.75rem;
+    font-size: 14px;
+    color: #1a1a1a;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    background: #fff;
+}
+
+.o_dynamic_field_input .o_input:focus {
+    border-color: #0a4b78;
+    box-shadow: 0 0 0 3px rgba(10, 75, 120, 0.1);
+    outline: none;
+}
+
+.o_dynamic_textarea {
+    min-height: 80px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.o_dynamic_select {
+    cursor: pointer;
+    appearance: auto;
+}
+
+.o_dynamic_boolean_row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-top: 4px;
+}
+
+.o_dynamic_boolean_label {
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Toggle switch style */
+.o_switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin: 0;
+}
+
+.o_switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.o_switch_slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ced4da;
+    border-radius: 24px;
+    transition: background 0.2s ease;
+}
+
+.o_switch_slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s ease;
+}
+
+.o_switch input:checked + .o_switch_slider {
+    background: #0a4b78;
+}
+
+.o_switch input:checked + .o_switch_slider:before {
+    transform: translateX(20px);
+}
+
+.o_dynamic_field_hint {
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .o_dynamic_field_row {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+    .o_dynamic_field_label {
+        flex: none;
+        padding-top: 0;
+    }
+}

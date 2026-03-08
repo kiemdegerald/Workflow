@@ -107,6 +107,18 @@
                             </group>
                             <field name="attachment_ids" widget="many2many_binary" string="Pièces jointes" nolabel="1"/>
                         </page>
+
+                        <!-- TAB CHAMPS PERSONNALISÉS -->
+                        <page string="📋 Informations complémentaires" name="custom_fields"
+                              invisible="not custom_value_ids">
+                            <field name="custom_value_ids" nolabel="1" readonly="1">
+                                <tree string="Champs personnalisés" create="false" delete="false">
+                                    <field name="field_name" string="Champ"/>
+                                    <field name="field_type" string="Type" optional="hide"/>
+                                    <field name="value_display" string="Valeur"/>
+                                </tree>
+                            </field>
+                        </page>
                         
                         <!-- TAB 4: HISTORIQUE -->
                         <page string="💬 Historique" name="history">

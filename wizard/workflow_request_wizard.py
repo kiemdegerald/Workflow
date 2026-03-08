@@ -92,6 +92,30 @@ class WorkflowRequestWizard(models.TransientModel):
         store=False
     )
 
+    # ==================== SECTION 5: CHAMPS PERSONNALISÉS ====================
+    custom_value_ids = fields.One2many(
+        'workflow.wizard.custom.value',
+        'wizard_id',
+        string='Champs du formulaire',
+    )
+    has_custom_fields = fields.Boolean(
+        string='A des champs personnalisés',
+        compute='_compute_has_custom_fields',
+        store=False,
+    )
+
+    @api.depends('workflow_type_id')
+    def _compute_has_custom_fields(self):
+        for wizard in self:
+            if wizard.workflow_type_id:
+                count = self.env['workflow.custom.field'].search_count([
+                    ('workflow_type_id', '=', wizard.workflow_type_id.id),
+                    ('active', '=', True),
+                ])
+                wizard.has_custom_fields = count > 0
+            else:
+                wizard.has_custom_fields = False
+
     @api.depends('workflow_type_id')
     def _compute_reference_preview(self):
         """Génère un aperçu de la référence qui sera créée"""
@@ -103,6 +127,22 @@ class WorkflowRequestWizard(models.TransientModel):
                 wizard.reference_preview = f"{type_code}/{year}/XXXX (auto-généré)"
             else:
                 wizard.reference_preview = "Sélectionnez un type de workflow"
+
+    @api.onchange('workflow_type_id')
+    def _onchange_workflow_type_populate_custom_fields(self):
+        """Peuple les champs personnalisés selon le type de workflow sélectionné."""
+        # Supprimer les anciennes lignes
+        self.custom_value_ids = [(5, 0, 0)]
+        if not self.workflow_type_id:
+            return
+        custom_fields = self.env['workflow.custom.field'].search([
+            ('workflow_type_id', '=', self.workflow_type_id.id),
+            ('active', '=', True),
+        ], order='sequence, id')
+        lines = []
+        for cf in custom_fields:
+            lines.append((0, 0, {'custom_field_id': cf.id}))
+        self.custom_value_ids = lines
 
     @api.depends('amount', 'workflow_type_id')
     def _compute_detected_circuit(self):
@@ -173,6 +213,22 @@ class WorkflowRequestWizard(models.TransientModel):
         
         return sequence.next_by_id()
 
+    def _save_custom_values(self, request):
+        """Copie les valeurs des champs personnalisés du wizard vers la demande."""
+        for line in self.custom_value_ids:
+            self.env['workflow.request.custom.value'].create({
+                'request_id': request.id,
+                'custom_field_id': line.custom_field_id.id,
+                'value_char': line.value_char,
+                'value_text': line.value_text,
+                'value_integer': line.value_integer,
+                'value_float': line.value_float,
+                'value_boolean': line.value_boolean,
+                'value_date': line.value_date,
+                'value_datetime': line.value_datetime,
+                'value_selection': line.value_selection,
+            })
+
     def _detect_workflow_circuit(self):
         """Détecte automatiquement le circuit de validation selon les règles métier"""
         self.ensure_one()
@@ -233,6 +289,9 @@ class WorkflowRequestWizard(models.TransientModel):
                 'res_model': 'workflow.request',
                 'res_id': request.id,
             })
+
+        # Sauvegarder les champs personnalisés
+        self._save_custom_values(request)
 
         # Message de confirmation dans le chatter
         request.message_post(
@@ -341,6 +400,9 @@ class WorkflowRequestWizard(models.TransientModel):
                 'res_model': 'workflow.request',
                 'res_id': request.id,
             })
+
+        # Sauvegarder les champs personnalisés
+        self._save_custom_values(request)
 
         # Créer automatiquement toutes les approbations pour les niveaux du circuit
         nb_levels = self._create_workflow_approvals(request)
